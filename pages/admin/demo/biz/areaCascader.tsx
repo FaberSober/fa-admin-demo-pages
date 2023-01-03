@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Admin } from '@/types';
 import { Card } from 'antd';
-import { AreaCascader } from '@fa/ui';
+import { AreaCascader } from '@fa-admin-pages/index';
+
 
 /**
  * 业务组件-地区选择
