@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Input, Space } from 'antd';
 import { trim } from 'lodash';
-import { FaFlexRestLayout, FaUtils, useSocketIO } from '@fa/ui';
+import { FaFlexRestLayout, FaUtils } from '@fa/ui';
 import { useUpdate } from 'ahooks';
+import { useSocketIO } from "@fa-admin-pages/hooks";
 
 interface Msg {
   time: string;
