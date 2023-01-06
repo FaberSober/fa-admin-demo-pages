@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FontAwesomeSelect } from '@fa/ui';
 import { FaIcon } from '@fa/icons';
 import { Card, Space } from 'antd';
+import { IconSelect } from "@/components";
 
 /**
  * @author xu.pengfei
@@ -22,7 +22,7 @@ export default function icon() {
       </Card>
 
       <Card title="选择图标" className="fa-mb12">
-        <FontAwesomeSelect value={value} onChange={setValue} />
+        <IconSelect value={value} onChange={setValue} />
 
         <p>
           图标代码：<code>&lt;FaIcon icon="fa-solid fa-{value}" /&gt;</code>
