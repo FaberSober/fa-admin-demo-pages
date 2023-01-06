@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaIcon, FontAwesomeSelect } from '@fa/ui';
+import { FontAwesomeSelect } from '@fa/ui';
+import { FaIcon } from '@fa/icons';
 import { Card, Space } from 'antd';
 
 /**
