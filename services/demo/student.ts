@@ -1,4 +1,4 @@
-import { GATE_APP } from '@/configs/server.config';
+import { GATE_APP } from '@/configs';
 import { BaseApi } from '@fa/ui';
 import { Demo } from '@/types';
 
