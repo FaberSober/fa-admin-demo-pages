@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Admin } from '@/types';
 import { Card } from 'antd';
-import { AreaCascader } from '@fa-admin-pages/index';
+import { AreaCascader } from '@/components';
 
 
 /**

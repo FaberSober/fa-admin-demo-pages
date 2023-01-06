@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Alert, Button, Card, Form, Input } from 'antd';
 import { ApiEffectLayoutContext, FaFlexRestLayout, FaUtils } from '@fa/ui';
-import { UserLayoutContext } from "@fa-admin-pages/layout";
+import { UserLayoutContext } from "@/layout";
 import { redisTestApi, studentApi } from '@/services';
 import { Demo } from '@/types';
 

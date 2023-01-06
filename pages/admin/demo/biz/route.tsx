@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RouteCascader } from "@fa-admin-pages/components";
+import { RouteCascader } from "@/components";
 import { Card } from "antd";
 
 /**

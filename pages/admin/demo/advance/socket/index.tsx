@@ -3,7 +3,7 @@ import { Button, Input, Space } from 'antd';
 import { trim } from 'lodash';
 import { FaFlexRestLayout, FaUtils } from '@fa/ui';
 import { useUpdate } from 'ahooks';
-import { useSocketIO } from "@fa-admin-pages/hooks";
+import { useSocketIO } from "@/hooks";
 
 interface Msg {
   time: string;
