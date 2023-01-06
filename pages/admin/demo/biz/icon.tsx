@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { FontAwesomeSelect } from '@fa/ui';
+import { FaIcon, FontAwesomeSelect } from '@fa/ui';
 import { Card, Space } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 /**
  * @author xu.pengfei
@@ -12,12 +11,12 @@ export default function icon() {
 
   return (
     <div className="fa-full-content fa-bg-white fa-p12" style={{ fontSize: '30px' }}>
-      <Card title="使用<FontAwesomeIcon />" className="fa-mb12">
+      <Card title="使用<FaIcon />" className="fa-mb12">
         <Space>
-          <FontAwesomeIcon icon={"fa-solid fa-check-square" as any} size="2xl" />
-          <FontAwesomeIcon icon={"fa-solid fa-check-square" as any} size="2xl" />
-          <FontAwesomeIcon icon={"fa-solid fa-circle" as any} size="2xl" />
-          <FontAwesomeIcon icon={"fa-solid fa-rocket" as any} size="2xl" />
+          <FaIcon icon="fa-solid fa-check-square" size="2xl" />
+          <FaIcon icon="fa-solid fa-check-square" size="2xl" />
+          <FaIcon icon="fa-solid fa-circle" size="2xl" />
+          <FaIcon icon="fa-solid fa-rocket" size="2xl" />
         </Space>
       </Card>
 
@@ -25,7 +24,7 @@ export default function icon() {
         <FontAwesomeSelect value={value} onChange={setValue} />
 
         <p>
-          图标代码：<code>&lt;FontAwesomeIcon icon="fa-solid fa-{value}" /&gt;</code>
+          图标代码：<code>&lt;FaIcon icon="fa-solid fa-{value}" /&gt;</code>
         </p>
       </Card>
     </div>
