@@ -12,8 +12,8 @@ export default function openTabs() {
   function handleAddTabIframe() {
     addTab({
       key: 'baidu',
-      path: 'http://www.baidu.com/',
-      name: '百度',
+      path: 'https://cn.bing.com/',
+      name: 'bing',
       type: 'iframe', // iframe, inner-内部网页
       closeable: true,
     })
@@ -33,6 +33,10 @@ export default function openTabs() {
     removeTab('baidu')
   }
 
+  function handleCloseTabInner() {
+    removeTab('/admin/system/account/base')
+  }
+
   return (
     <div className="fa-full-content fa-p12">
       <Card title="顶部Tab标签栏操作" className="fa-mb12">
@@ -40,6 +44,7 @@ export default function openTabs() {
           <Button onClick={handleAddTabIframe}>打开标签页(iframe)</Button>
           <Button onClick={handleAddTabInner}>打开标签页(inner-内部网页)</Button>
           <Button onClick={handleCloseTabIframe}>关闭标签页(iframe)</Button>
+          <Button onClick={handleCloseTabInner}>关闭标签页(inner-内部网页)</Button>
         </Space>
       </Card>
     </div>
