@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card } from "antd";
 import * as echarts from 'echarts';
+import { EchartsBar, EchartsPie } from "@/components";
 
 
 /**
@@ -36,6 +37,39 @@ export default function echartsDemo() {
     <div className="fa-full-content fa-p12">
       <Card title="ECharts 入门示例" className="fa-mb12">
         <div id="echarts-demo1" style={{width: 500, height: 300}} />
+      </Card>
+
+      <Card title="ECharts 封装示例" className="fa-mb12" bodyStyle={{display: 'flex', flexWrap: "wrap"}}>
+        <EchartsBar
+          title="Bar"
+          subTitle="Bar Chart"
+          data={[
+            { value: 1048, name: 'Search Engine' },
+            { value: 735, name: 'Direct' },
+            { value: 580, name: 'Email' },
+            { value: 484, name: 'Union Ads' },
+            { value: 300, name: 'Video Ads' }
+          ]}
+          dataTitle="销量"
+          style={{width: 500, height: 300}}
+          barSeriesOption={{
+            barWidth: 30,
+          }}
+        />
+
+        <EchartsPie
+          title="Pie"
+          subTitle="Pie Chart"
+          data={[
+            { value: 1048, name: 'Search Engine' },
+            { value: 735, name: 'Direct' },
+            { value: 580, name: 'Email' },
+            { value: 484, name: 'Union Ads' },
+            { value: 300, name: 'Video Ads' }
+          ]}
+          dataTitle="销量"
+          style={{width: 500, height: 300}}
+        />
       </Card>
 
     </div>
