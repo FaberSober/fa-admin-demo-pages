@@ -9,7 +9,7 @@ export default function excel() {
 
   return (
     <div className="fa-full-content fa-flex-row fa-p12">
-      <OnlyofficeEditor fileId="c648e3a45224b0805c68f7b0a791e486" />
+      <OnlyofficeEditor fileId="92cb706f8c3225cedd4d86da1534f999" />
     </div>
   )
 }
