@@ -1,5 +1,6 @@
-import React from 'react';
-import {Map} from '@uiw/react-amap';
+import React, {useState} from 'react';
+import {Map, Marker} from '@uiw/react-amap';
+import {Button, Card, Space} from "antd";
 
 
 /**
@@ -8,9 +9,28 @@ import {Map} from '@uiw/react-amap';
  * @date 2023/4/21 11:01
  */
 export default function basic() {
+  const [pos, setPos] = useState<any>()
+
   return (
-    <div>
-      <Map style={{height: 500, width: 800}} />
+    <div className="fa-full-content fa-bg-white fa-p12">
+      <Card title="基础地图展示" className="fa-mb12">
+        <Map style={{height: 200}} />
+      </Card>
+
+      <Card title="地图坐标拾取" className="fa-mb12">
+        <Map
+          style={{height: 200}}
+          onClick={(event) => {
+            console.log('点击事件！', event);
+            setPos([event.lnglat.lng, event.lnglat.lat])
+          }}
+        >
+          {pos && <Marker position={new AMap.LngLat(pos[0],pos[1])} />}
+        </Map>
+        <div>
+          点击拾取坐标：lng: {pos && pos[0]}, lat: {pos && pos[1]}
+        </div>
+      </Card>
     </div>
   )
 }
