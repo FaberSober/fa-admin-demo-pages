@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Map, Marker} from '@uiw/react-amap';
 import {Button, Card, Input, message} from "antd";
 import AMapAutoComplete from "@features/fa-admin-pages/components/map/AMapAutoComplete";
+import AMapSearchSelect from "@features/fa-admin-pages/components/map/AMapSearchSelect";
 
 
 /**
@@ -108,6 +109,15 @@ export default function basic() {
         <div className="fa-mt12">
           status: {status2}, address: {address2}
         </div>
+      </Card>
+
+      <Card title="AMap.Geocoder - 逆向地理编码方法" className="fa-mb12">
+        <AMapSearchSelect
+          style={{height: 200, width: 600}}
+          onSelect={(v) => {
+            console.log('onSelect', v)
+          }}
+        />
       </Card>
 
       <div style={{height: 500 }} />
