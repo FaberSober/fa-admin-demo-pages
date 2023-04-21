@@ -1,4 +1,6 @@
 import React from 'react';
+import {Map} from '@uiw/react-amap';
+
 
 /**
  * 高德地图
@@ -7,6 +9,8 @@ import React from 'react';
  */
 export default function basic() {
   return (
-    <div>111</div>
+    <div>
+      <Map style={{height: 500, width: 800}} />
+    </div>
   )
 }
