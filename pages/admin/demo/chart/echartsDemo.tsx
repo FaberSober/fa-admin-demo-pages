@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { Card } from "antd";
-import * as echarts from 'echarts';
-import { EchartsBar, EchartsBase, EchartsPie } from "@/components";
+import React from 'react';
+import {Card} from "antd";
+import {EchartsBar, EchartsBase, EchartsPie} from "@/components";
+import EchartsDynamicDemo from "./cube/EchartsDynamicDemo";
+import EchartsBasicDemo from "./cube/EchartsBasicDemo";
 
 
 /**
@@ -10,33 +11,10 @@ import { EchartsBar, EchartsBase, EchartsPie } from "@/components";
  */
 export default function echartsDemo() {
 
-  useEffect(() => {
-    // 基于准备好的dom，初始化echarts实例
-    const myChart = echarts.init(document.getElementById('echarts-demo1')!);
-    // 绘制图表
-    myChart.setOption({
-      title: {
-        text: 'ECharts 入门示例'
-      },
-      tooltip: {},
-      xAxis: {
-        data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
-      },
-      yAxis: {},
-      series: [
-        {
-          name: '销量',
-          type: 'bar',
-          data: [5, 20, 36, 10, 10, 20]
-        }
-      ]
-    });
-  }, [])
-
   return (
     <div className="fa-full-content fa-p12">
       <Card title="ECharts 入门示例" className="fa-mb12">
-        <div id="echarts-demo1" style={{width: 500, height: 300}} />
+        <EchartsBasicDemo/>
       </Card>
 
       <Card title="ECharts 封装示例" className="fa-mb12" bodyStyle={{display: 'flex', flexWrap: "wrap"}}>
@@ -44,11 +22,11 @@ export default function echartsDemo() {
           title="Bar"
           subTitle="Bar Chart"
           data={[
-            { value: 1048, name: 'Search Engine' },
-            { value: 735, name: 'Direct' },
-            { value: 580, name: 'Email' },
-            { value: 484, name: 'Union Ads' },
-            { value: 300, name: 'Video Ads' }
+            {value: 1048, name: 'Search Engine'},
+            {value: 735, name: 'Direct'},
+            {value: 580, name: 'Email'},
+            {value: 484, name: 'Union Ads'},
+            {value: 300, name: 'Video Ads'}
           ]}
           dataTitle="销量"
           style={{width: 500, height: 300}}
@@ -61,11 +39,11 @@ export default function echartsDemo() {
           title="Pie"
           subTitle="Pie Chart"
           data={[
-            { value: 1048, name: 'Search Engine' },
-            { value: 735, name: 'Direct' },
-            { value: 580, name: 'Email' },
-            { value: 484, name: 'Union Ads' },
-            { value: 300, name: 'Video Ads' }
+            {value: 1048, name: 'Search Engine'},
+            {value: 735, name: 'Direct'},
+            {value: 580, name: 'Email'},
+            {value: 484, name: 'Union Ads'},
+            {value: 300, name: 'Video Ads'}
           ]}
           dataTitle="销量"
           style={{width: 500, height: 300}}
@@ -75,7 +53,7 @@ export default function echartsDemo() {
       <Card title="ECharts 折线图" className="fa-mb12">
         <EchartsBase
           option={{
-            grid: { top: 8, right: 8, bottom: 24, left: 36 },
+            grid: {top: 8, right: 8, bottom: 24, left: 36},
             xAxis: {
               type: 'category',
               data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -96,6 +74,10 @@ export default function echartsDemo() {
           }}
           style={{width: 500, height: 300}}
         />
+      </Card>
+
+      <Card title="ECharts 动态表格" className="fa-mb12">
+        <EchartsDynamicDemo/>
       </Card>
 
     </div>
