@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card } from "antd";
 import * as echarts from 'echarts';
-import { EchartsBar, EchartsPie } from "@/components";
+import { EchartsBar, EchartsBase, EchartsPie } from "@/components";
 
 
 /**
@@ -68,6 +68,32 @@ export default function echartsDemo() {
             { value: 300, name: 'Video Ads' }
           ]}
           dataTitle="销量"
+          style={{width: 500, height: 300}}
+        />
+      </Card>
+
+      <Card title="ECharts 折线图" className="fa-mb12">
+        <EchartsBase
+          option={{
+            grid: { top: 8, right: 8, bottom: 24, left: 36 },
+            xAxis: {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            },
+            yAxis: {
+              type: 'value',
+            },
+            series: [
+              {
+                data: [820, 932, 901, 934, 1290, 1330, 1320],
+                type: 'line',
+                smooth: true,
+              },
+            ],
+            tooltip: {
+              trigger: 'axis',
+            },
+          }}
           style={{width: 500, height: 300}}
         />
       </Card>
