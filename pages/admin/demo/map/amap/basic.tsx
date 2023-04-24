@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Map, Marker} from '@uiw/react-amap';
+import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
 import {Button, Card, Input, message} from "antd";
 import AMapAutoComplete from "@features/fa-admin-pages/components/map/AMapAutoComplete";
 import AMapSearchSelect from "@features/fa-admin-pages/components/map/AMapSearchSelect";
@@ -118,6 +118,12 @@ export default function basic() {
             console.log('onSelect', v)
           }}
         />
+      </Card>
+
+      <Card title="MapTypeControl 涂层类型切换" className="fa-mb12">
+        <Map style={{height: 200, width: 600}}>
+          <MapTypeControl offset={[10, 10]} position="RT" />
+        </Map>
       </Card>
 
       <div style={{height: 500 }} />
