@@ -13,11 +13,18 @@ export default function icon() {
   return (
     <div className="fa-full-content fa-bg-white fa-p12" style={{ fontSize: '30px' }}>
       <Card title="使用<FaIcon />" className="fa-mb12">
+        <p>可以自定义大小：</p>
         <Space>
-          <FaIcon icon="fa-solid fa-check-square" size="2xl" />
-          <FaIcon icon="fa-solid fa-check-square" size="2xl" />
-          <FaIcon icon="fa-solid fa-circle" size="2xl" />
+          <FaIcon icon="fa-solid fa-rocket" />
+          <FaIcon icon="fa-solid fa-rocket" size="xl" />
           <FaIcon icon="fa-solid fa-rocket" size="2xl" />
+        </Space>
+        <p>可以自定义修改颜色：</p>
+        <Space>
+          <FaIcon icon="fa-solid fa-rocket" size="2xl" style={{ color: '#f50' }} />
+          <FaIcon icon="fa-solid fa-rocket" size="2xl" style={{ color: 'rgb(45, 183, 245)' }} />
+          <FaIcon icon="fa-solid fa-rocket" size="2xl" style={{ color: 'hsl(102, 53%, 61%)' }} />
+          <FaIcon icon="fa-solid fa-rocket" size="2xl" style={{ color: 'hwb(205 6% 9%)' }} />
         </Space>
       </Card>
 
