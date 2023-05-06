@@ -83,7 +83,7 @@ export default function StudentList() {
             <Button onClick={() => form.submit()} loading={loading} icon={<SearchOutlined />}>
               查询
             </Button>
-            <Button onClick={() => clearForm(form)} loading={loading}>
+            <Button onClick={() => clearForm(form)}>
               重置
             </Button>
             <StudentModal addBtn title={`新增${serviceName}信息`} fetchFinish={fetchPageList} />
