@@ -1,67 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Input, Space } from 'antd';
-import { trim } from 'lodash';
-import { FaFlexRestLayout, FaUtils } from '@fa/ui';
-import { useUpdate } from 'ahooks';
-import { useSocketIO } from "@/hooks";
+import React from 'react';
+import {Card} from 'antd';
+import SocketSimple from "./cube/SocketSimple";
+import SocketTask from "./cube/SocketTask";
 
-interface Msg {
-  time: string;
-  msg: string;
-}
-
-function genMsg(msg?: string): Msg {
-  return { time: FaUtils.getCurTime(), msg: trim(msg) };
-}
-
-const msgList: Msg[] = [];
 
 /**
  * @author xu.pengfei
  * @date 2022/12/6 13:55
  */
 export default function index() {
-  const { ready, socketInstance, socketEmit } = useSocketIO({
-    onConnect: () => addMsg('Client has connected to the server!'),
-    onDisconnect: () => addMsg('The client has disconnected!'),
-  });
-  const update = useUpdate();
-
-  const [input, setInput] = useState<string>();
-
-  function addMsg(msg: string) {
-    msgList.push(genMsg(msg));
-    update();
-  }
-
-  useEffect(() => {
-    if (!ready) return;
-
-    socketInstance.on('connected', (data: any) => addMsg(data));
-    socketInstance.on('chatevent', (data: any) => addMsg(data.userName + ': ' + data.message));
-  }, [ready]);
-
-  function handleSend() {
-    addMsg(input || '');
-    socketEmit('chatevent', { userName: '用户1', message: input });
-    setInput('');
-  }
 
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">
-      <Space className="fa-mb12">
-        <Input value={input} onChange={(e) => setInput(e.target.value)} />
-        <Button onClick={handleSend}>发送</Button>
-      </Space>
+      <Card title="socket连接简单示例" className="fa-mb12">
+        <SocketSimple/>
+      </Card>
 
-      <FaFlexRestLayout>
-        {msgList.map((m, i) => (
-          <div key={`${m}-${i}`} className="fa-flex-row-center">
-            <div style={{ color: '#F90', width: 90 }}>{m.time}</div>
-            <div>{m.msg}</div>
-          </div>
-        ))}
-      </FaFlexRestLayout>
+      <Card title="socket后端更新进度" className="fa-mb12">
+        <SocketTask/>
+      </Card>
     </div>
   );
 }
