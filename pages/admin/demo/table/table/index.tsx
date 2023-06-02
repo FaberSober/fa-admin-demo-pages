@@ -16,18 +16,8 @@ const biz = 'demo_student';
 export default function StudentList() {
   const [form] = Form.useForm();
 
-  const {
-    queryParams,
-    setFormValues,
-    handleTableChange,
-    setSceneId,
-    setConditionList,
-    fetchPageList,
-    loading,
-    list,
-    dicts,
-    paginationProps,
-  } = useTableQueryParams<Demo.Student>(studentApi.page, {}, serviceName);
+  const {queryParams, setFormValues, handleTableChange, setSceneId, setConditionList, fetchPageList, loading, list, dicts, paginationProps} =
+    useTableQueryParams<Demo.Student>(studentApi.page, {}, serviceName);
 
   const [handleDelete] = useDelete<number>(studentApi.remove, fetchPageList, serviceName);
   const [exporting, fetchExportExcel] = useExport(studentApi.exportExcel, queryParams);
@@ -75,22 +65,16 @@ export default function StudentList() {
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
           <Form form={form} layout="inline" onFinish={setFormValues}>
             <Form.Item name="name" label="姓名">
-              <Input placeholder="请输入姓名" />
+              <Input placeholder="请输入姓名" allowClear />
             </Form.Item>
-          </Form>
 
-          <Space>
-            <Button onClick={() => form.submit()} loading={loading} icon={<SearchOutlined />}>
-              查询
-            </Button>
-            <Button onClick={() => clearForm(form)}>
-              重置
-            </Button>
-            <StudentModal addBtn title={`新增${serviceName}信息`} fetchFinish={fetchPageList} />
-            <Button loading={exporting} icon={<DownloadOutlined />} onClick={fetchExportExcel}>
-              导出
-            </Button>
-          </Space>
+            <Space>
+              <Button htmlType="submit" loading={loading} icon={<SearchOutlined />}>查询</Button>
+              <Button onClick={() => clearForm(form)}>重置</Button>
+              <StudentModal addBtn title={`新增${serviceName}信息`} fetchFinish={fetchPageList} />
+              <Button loading={exporting} icon={<DownloadOutlined />} onClick={fetchExportExcel}>导出</Button>
+            </Space>
+          </Form>
         </div>
       </div>
 
