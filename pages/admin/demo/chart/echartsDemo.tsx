@@ -1,6 +1,6 @@
 import React from 'react';
 import {Card} from "antd";
-import {EchartsBar, EchartsPie} from "@/components";
+import {EchartsBar, EchartsPie, EchartsLine} from "@/components";
 import EchartsDynamicDemo from "./cube/EchartsDynamicDemo";
 import EchartsBasicDemo from "./cube/EchartsBasicDemo";
 import EchartsSimpleDemo from "@features/fa-admin-demo-pages/pages/admin/demo/chart/cube/EchartsSimpleDemo";
@@ -34,6 +34,17 @@ export default function echartsDemo() {
           barSeriesOption={{
             barWidth: 30,
           }}
+        />
+
+        <EchartsLine
+          dataX={["一", "二", "三", "四", "五", "六", "七"]}
+          dataY={[
+            {
+              name: '指标1',
+              data: [4,5,4,5,4,5,6],
+            }
+          ]}
+          style={{width: 500, height: 300}}
         />
 
         <EchartsPie

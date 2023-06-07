@@ -100,9 +100,9 @@ export default function EchartsDynamicDemo() {
         xAxisIndex: 1,
         yAxisIndex: 1,
         itemStyle: {
-          normal: {
-            barBorderRadius: 4,
-          }
+          // normal: {
+          //   barBorderRadius: 4,
+          // }
         },
         animationEasing: 'elasticOut',
         animationDelay: function (idx) {
