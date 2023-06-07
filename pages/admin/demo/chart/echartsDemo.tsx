@@ -1,6 +1,6 @@
 import React from 'react';
 import {Card} from "antd";
-import {EchartsBar, EchartsPie, EchartsLine} from "@/components";
+import {EchartsBar, EchartsPie, EchartsLine, EchartsGauge, EchartsGaugeStep} from "@/components";
 import EchartsDynamicDemo from "./cube/EchartsDynamicDemo";
 import EchartsBasicDemo from "./cube/EchartsBasicDemo";
 import EchartsSimpleDemo from "@features/fa-admin-demo-pages/pages/admin/demo/chart/cube/EchartsSimpleDemo";
@@ -58,6 +58,22 @@ export default function echartsDemo() {
             {value: 300, name: 'Video Ads'}
           ]}
           dataTitle="销量"
+          style={{width: 500, height: 300}}
+        />
+
+        <EchartsGauge
+          min={0}
+          max={100}
+          value={80}
+          unit="%"
+          style={{width: 500, height: 300}}
+        />
+
+        <EchartsGaugeStep
+          min={0}
+          max={100}
+          value={70}
+          unit="%"
           style={{width: 500, height: 300}}
         />
       </Card>
