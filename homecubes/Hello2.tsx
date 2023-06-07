@@ -6,7 +6,7 @@ export interface Hello2Props {
 
 export function Hello2() {
   return (
-    <div>
+    <div className="fa-bg-white">
       <div>Hello2</div>
       <div>This Component hide title</div>
     </div>
