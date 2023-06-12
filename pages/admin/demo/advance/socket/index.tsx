@@ -2,6 +2,7 @@ import React from 'react';
 import {Card} from 'antd';
 import SocketSimple from "./cube/SocketSimple";
 import SocketTask from "./cube/SocketTask";
+import SocketTaskCube from "./cube/SocketTaskCube";
 
 
 /**
@@ -18,6 +19,10 @@ export default function index() {
 
       <Card title="socket后端更新进度" className="fa-mb12">
         <SocketTask/>
+      </Card>
+
+      <Card title="socket后端更新进度-封装代码" className="fa-mb12">
+        <SocketTaskCube />
       </Card>
     </div>
   );

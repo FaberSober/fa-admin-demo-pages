@@ -55,7 +55,7 @@ export default function SocketTask() {
       <div>
         {task && (
           <div>
-            <div>TaskId[{task.taskId}]: {task.cur} / {task.total}</div>
+            <div>TaskId[{task.taskId}] {task.name}: {task.cur} / {task.total}</div>
 
             <Progress percent={getPer()} />
           </div>
