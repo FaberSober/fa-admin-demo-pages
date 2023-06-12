@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Fa} from "@/types";
 import {Button, Space} from "antd";
 import {socketTaskTestApi} from "@features/fa-admin-demo-pages/services";
-import {SocketTaskProgress} from "@features/fa-admin-pages/components";
+import {SocketTaskProgress, SocketTaskRemainTime} from "@features/fa-admin-pages/components";
 
 /**
  * @author xu.pengfei
@@ -24,7 +24,13 @@ export default function SocketTaskCube() {
       <div>
         {task && (
           <div>
-            <div>TaskId[{task.taskId}] {task.name}: {task.cur} / {task.total}</div>
+            <div className="fa-flex-row-center">
+              <div>TaskId[{task.taskId}] {task.name}: {task.cur} / {task.total} 。 </div>
+              <div>
+                剩余时间：
+                <SocketTaskRemainTime task={task} />
+              </div>
+            </div>
 
             <SocketTaskProgress task={task} onTaskChange={setTask} />
           </div>
