@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {FaUtils} from "@fa/ui";
-import {Button, message, Progress, Space} from "antd";
+import {Button, Progress, Space} from "antd";
 import {Fa} from "@/types";
 import {socketTaskTestApi} from "@features/fa-admin-demo-pages/services";
 import {useSocketIO} from "@features/fa-admin-pages/hooks";
@@ -25,12 +25,9 @@ export default function SocketTask() {
     })
   }
 
-  function pause() {
-    message.info('TODO')
-  }
-
   function stop() {
-    message.info('TODO')
+    if (task === undefined) return;
+    socketTaskTestApi.stop({ taskId: task.taskId }).then(res => FaUtils.showResponse(res, '停止任务'))
   }
 
   useEffect(() => {
@@ -48,7 +45,6 @@ export default function SocketTask() {
     <div>
       <Space className="fa-mb12">
         <Button onClick={start}>开启任务</Button>
-        <Button onClick={pause}>暂停任务</Button>
         <Button onClick={stop}>停止任务</Button>
       </Space>
 
