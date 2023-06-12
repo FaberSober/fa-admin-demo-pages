@@ -1,5 +1,9 @@
-import React, {useState} from 'react';
-import {Button, Space} from "antd";
+import React, {useEffect, useState} from 'react';
+import {FaUtils} from "@fa/ui";
+import {Button, message, Progress, Space} from "antd";
+import {Fa} from "@/types";
+import {socketTaskTestApi} from "@features/fa-admin-demo-pages/services";
+import {useSocketIO} from "@features/fa-admin-pages/hooks";
 
 
 /**
@@ -7,18 +11,37 @@ import {Button, Space} from "antd";
  * @date 2023/5/29 11:32
  */
 export default function SocketTask() {
-  const [data, setData] = useState()
+  const { ready, socketInstance, socketEmit } = useSocketIO({
+    onConnect: () => console.log('Client has connected to the server!'),
+    onDisconnect: () => console.log('The client has disconnected!'),
+  });
+
+  const [task, setTask] = useState<Fa.SocketTaskVo>()
 
   function start() {
-
+    socketTaskTestApi.start().then(res => {
+      setTask(res.data)
+      socketEmit('link_task', res.data.taskId)
+    })
   }
 
   function pause() {
-
+    message.info('TODO')
   }
 
   function stop() {
+    message.info('TODO')
+  }
 
+  useEffect(() => {
+    if (!ready) return;
+
+    socketInstance.on('on_progress', (data: Fa.SocketTaskVo) => setTask(data));
+  }, [ready]);
+
+  function getPer() {
+    if (task === undefined || task.total <= 0) return 0;
+    return FaUtils.tryToFixed(task.cur / task.total * 100, 0)
   }
 
   return (
@@ -30,7 +53,13 @@ export default function SocketTask() {
       </Space>
 
       <div>
-        TODO
+        {task && (
+          <div>
+            <div>TaskId[{task.taskId}]: {task.cur} / {task.total}</div>
+
+            <Progress percent={getPer()} />
+          </div>
+        )}
       </div>
     </div>
   )
