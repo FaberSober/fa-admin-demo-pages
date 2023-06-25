@@ -15,7 +15,7 @@ namespace Demo {
   /** Demo-学生表 */
   export interface Student extends Fa.BaseDelEntity {
     /** ID */
-    id: number;
+    id: string;
     /** 学生名 */
     name: string;
     /** 年龄 */
@@ -41,11 +41,11 @@ namespace Demo {
   /** DEMO-tree数据 */
   export interface Tree extends Fa.BaseDelEntity {
     /** ID */
-    id: number;
+    id: string;
     /** 名称 */
     name: string;
     /** 上级节点 */
-    parentId: number;
+    parentId: string;
     /** 排序ID */
     sort: number;
   }
