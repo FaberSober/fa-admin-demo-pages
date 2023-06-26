@@ -10,5 +10,5 @@ export interface TreeCascadeProps extends Omit<BaseCascaderProps<Demo.Tree>, 'se
  * @date 2020/12/25
  */
 export default function TreeCascade(props: TreeCascadeProps) {
-  return <BaseCascader showRoot serviceApi={treeApi} {...props} />;
+  return <BaseCascader showRoot={false} serviceApi={treeApi} {...props} />;
 }
