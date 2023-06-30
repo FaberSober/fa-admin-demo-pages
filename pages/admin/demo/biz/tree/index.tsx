@@ -3,7 +3,7 @@ import { Card, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { treeApi } from '@/services';
 import { BaseTree } from '@fa/ui';
-import { Dm } from '@/types';
+import { Demo } from '@/types';
 import TreeModal from "./modal/TreeModal";
 
 /**
@@ -12,7 +12,7 @@ import TreeModal from "./modal/TreeModal";
  * @date 2022/11/30
  */
 export default function tree() {
-  const [sel, setSel] = useState<Dm.Tree>();
+  const [sel, setSel] = useState<Demo.Tree>();
 
   /** 点击选中tree节点的事件，这里可以获取点击节点的属性 */
   function onTreeSelect(keys: any[]) {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { BaseSearchSelect, BaseSearchSelectProps } from '@fa/ui';
 import { studentApi } from '@/services';
-import { Dm } from '@/types';
+import { Demo } from '@/types';
 
-export interface IProps extends Omit<BaseSearchSelectProps<Dm.Student, number>, 'serviceApi'> {}
+export interface IProps extends Omit<BaseSearchSelectProps<Demo.Student, number>, 'serviceApi'> {}
 
 /**
  * @author xu.pengfei

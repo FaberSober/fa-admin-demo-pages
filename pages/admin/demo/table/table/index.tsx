@@ -4,7 +4,7 @@ import { Button, Form, Input, Space, Tag } from 'antd';
 import { isNil } from 'lodash';
 import { AuthDelBtn, BaseBizTable, BaseTableUtils, clearForm, FaberTable, useDelete, useExport, useTableQueryParams } from '@fa/ui';
 import { studentApi } from '@/services';
-import { Dm } from '@/types';
+import { Demo } from '@/types';
 import StudentModal from './modal/StudentModal';
 
 const serviceName = '学生表-表格查询示例';
@@ -17,7 +17,7 @@ export default function StudentList() {
   const [form] = Form.useForm();
 
   const {queryParams, setFormValues, handleTableChange, setSceneId, setConditionList, fetchPageList, loading, list, dicts, paginationProps} =
-    useTableQueryParams<Dm.Student>(studentApi.page, {}, serviceName);
+    useTableQueryParams<Demo.Student>(studentApi.page, {}, serviceName);
 
   const [handleDelete] = useDelete<number>(studentApi.remove, fetchPageList, serviceName);
   const [exporting, fetchExportExcel] = useExport(studentApi.exportExcel, queryParams);
@@ -55,7 +55,7 @@ export default function StudentList() {
         tcRequired: true,
         tcType: 'menu',
       },
-    ] as FaberTable.ColumnsProp<Dm.Student>[];
+    ] as FaberTable.ColumnsProp<Demo.Student>[];
   }
 
   return (
@@ -91,12 +91,12 @@ export default function StudentList() {
         onSceneChange={(v) => setSceneId(v)}
         onConditionChange={(cL) => setConditionList(cL)}
         expandable={{
-          expandedRowRender: (record: Dm.Student) => (
+          expandedRowRender: (record: Demo.Student) => (
             <p style={{ margin: 0 }}>
               info1: {record.info.info1}; info2: {record.info.info2};
             </p>
           ),
-          rowExpandable: (record: Dm.Student) => !isNil(record.info),
+          rowExpandable: (record: Demo.Student) => !isNil(record.info),
         }}
       />
     </div>

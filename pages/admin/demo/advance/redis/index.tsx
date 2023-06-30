@@ -3,7 +3,7 @@ import { Alert, Button, Card, Form, Input } from 'antd';
 import { ApiEffectLayoutContext, FaFlexRestLayout, FaUtils } from '@fa/ui';
 import { UserLayoutContext } from "@/layout";
 import { redisTestApi, studentApi } from '@/services';
-import { Dm } from '@/types';
+import { Demo } from '@/types';
 
 /**
  * @author xu.pengfei
@@ -17,7 +17,7 @@ export default function index() {
   const [form2] = Form.useForm();
 
   const [data, setData] = useState<string>();
-  const [student, setStudent] = useState<Dm.Student>();
+  const [student, setStudent] = useState<Demo.Student>();
 
   function onFinish({ key, value }: any) {
     redisTestApi.addCache(key, value).then(refreshIframe);
