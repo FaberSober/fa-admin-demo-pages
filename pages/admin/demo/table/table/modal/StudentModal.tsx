@@ -4,12 +4,12 @@ import { Button, DatePicker, Form, Input } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { ApiEffectLayoutContext, BaseBoolRadio, CommonModalProps, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
 import { studentApi } from '@/services';
-import { Demo } from '@/types';
+import { Dm } from '@/types';
 
 /**
  * Demo-学生表实体新增、编辑弹框
  */
-export default function StudentModal({ children, title, record, fetchFinish, addBtn, editBtn, ...props }: CommonModalProps<Demo.Student>) {
+export default function StudentModal({ children, title, record, fetchFinish, addBtn, editBtn, ...props }: CommonModalProps<Dm.Student>) {
   const { loadingEffect } = useContext(ApiEffectLayoutContext);
   const [form] = Form.useForm();
 

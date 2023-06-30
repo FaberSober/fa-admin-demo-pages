@@ -1,9 +1,9 @@
 import React from 'react';
 import { BaseCascader, BaseCascaderProps } from '@fa/ui';
 import { treeApi } from '@/services';
-import { Demo } from '@/types';
+import { Dm } from '@/types';
 
-export interface TreeCascadeProps extends Omit<BaseCascaderProps<Demo.Tree>, 'serviceApi'> {}
+export interface TreeCascadeProps extends Omit<BaseCascaderProps<Dm.Tree>, 'serviceApi'> {}
 
 /**
  * @author xu.pengfei
