@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
 import {Button, Card, Space, Switch, Tag} from "antd";
-import {LangContext} from "@features/fa-admin-pages/layout";
-import {InputColor} from "@fa/ui";
+import {InputColor, ThemeLayoutContext} from "@fa/ui";
 
 
 /**
@@ -9,7 +8,7 @@ import {InputColor} from "@fa/ui";
  * @date 2023/6/6 15:41
  */
 export default function index() {
-  const { setColorPrimary, themeDark, setThemeDark } = useContext(LangContext);
+  const { setColorPrimary, themeDark, setThemeDark } = useContext(ThemeLayoutContext);
 
   function handleChangeThemeColor(color: string) {
     // set antd theme primary color
