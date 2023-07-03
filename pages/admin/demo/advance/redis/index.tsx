@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
-import { Alert, Button, Card, Form, Input } from 'antd';
-import { ApiEffectLayoutContext, FaFlexRestLayout, FaUtils } from '@fa/ui';
-import { UserLayoutContext } from "@/layout";
-import { redisTestApi, studentApi } from '@/services';
-import { Demo } from '@/types';
+import React, {useContext, useState} from 'react';
+import {Alert, Button, Card, Form, Input} from 'antd';
+import {ApiEffectLayoutContext, FaFlexRestLayout, FaUtils} from '@fa/ui';
+import {ConfigLayoutContext} from "@/layout";
+import {redisTestApi, studentApi} from '@/services';
+import {Demo} from '@/types';
 
 /**
  * @author xu.pengfei
@@ -11,7 +11,7 @@ import { Demo } from '@/types';
  */
 export default function index() {
   const { loadingEffect } = useContext(ApiEffectLayoutContext);
-  const { systemConfig } = useContext(UserLayoutContext);
+  const { systemConfig } = useContext(ConfigLayoutContext);
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
