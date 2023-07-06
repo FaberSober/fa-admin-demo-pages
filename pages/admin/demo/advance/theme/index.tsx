@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {Button, Card, Space, Switch, Tag} from "antd";
+import {Button, Card, ColorPicker, Space, Switch, Tag} from "antd";
 import {InputColor, ThemeLayoutContext} from "@fa/ui";
 
 
@@ -23,6 +23,8 @@ export default function index() {
 
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">
+      <ColorPicker />
+
       <Card title="亮色、暗色、主题色切换" className="fa-mb12">
         <div className="fa-flex-row-center">
           <InputColor value={primaryColor} onChange={(v:string) => handleChangeThemeColor(v)} inputStyle={{display: 'none'}} cubeStyle={{minWidth: 25, height: 25}} />
