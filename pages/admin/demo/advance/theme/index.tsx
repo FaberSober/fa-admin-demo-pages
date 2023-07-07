@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {Button, Card, ColorPicker, Space, Switch, Tag} from "antd";
 import {InputColor, ThemeLayoutContext} from "@fa/ui";
 
@@ -21,9 +21,17 @@ export default function index() {
 
   const primaryColor = document.body.style.getPropertyValue('--primary-color');
 
+  const [color, setColor] = useState('#FF0000')
+
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">
-      <ColorPicker />
+      <ColorPicker
+        value={color}
+        onChange={(v,hex) => {
+          console.log('ColorPicker.onChange', v, hex)
+          setColor(hex)
+        }}
+      />
 
       <Card title="亮色、暗色、主题色切换" className="fa-mb12">
         <div className="fa-flex-row-center">
