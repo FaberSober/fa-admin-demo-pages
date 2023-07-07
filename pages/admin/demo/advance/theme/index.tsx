@@ -25,17 +25,19 @@ export default function index() {
 
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">
-      <ColorPicker
-        value={color}
-        onChange={(v,hex) => {
-          console.log('ColorPicker.onChange', v, hex)
-          setColor(hex)
-        }}
-      />
+      <Card title="颜色选择器" className="fa-mb12">
+        <ColorPicker
+          value={color}
+          onChange={(v,hex) => {
+            console.log('ColorPicker.onChange', v, hex)
+            setColor(hex)
+          }}
+        />
+      </Card>
 
       <Card title="亮色、暗色、主题色切换" className="fa-mb12">
         <div className="fa-flex-row-center">
-          <InputColor value={primaryColor} onChange={(v:string) => handleChangeThemeColor(v)} inputStyle={{display: 'none'}} cubeStyle={{minWidth: 25, height: 25}} />
+          <InputColor value={primaryColor} onChange={(v:string) => handleChangeThemeColor(v)} style={{width: 25, height: 25}} />
 
           <div className="fa-flex-row-center fa-mr12">
             {['#F5222D', '#faad14', '#50CEE3', '#1677ff', '#722ED1', '#053553'].map((i) => (
