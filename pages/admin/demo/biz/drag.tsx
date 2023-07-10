@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Card, Switch } from 'antd';
-import { FaDragItem, FaSortGrid, FaSortList } from '@fa/ui';
+import { AuthDelBtn, FaDragItem, FaSortGrid, FaSortList } from '@fa/ui';
 import { DragOutlined, PlusOutlined } from '@ant-design/icons';
+
 
 function genList(i: number): { id: number; name: string }[] {
   return Array.from({ length: i }, (_, k) => ({ id: k + 1, name: `第${k + 1}个数据` }));
@@ -15,6 +16,7 @@ function genList(i: number): { id: number; name: string }[] {
 export default function drag() {
   const [array, setArray] = useState(genList(5));
   const [array2, setArray2] = useState(genList(5));
+  const [arrayDel2, setArrayDel2] = useState(genList(5));
   const [array3, setArray3] = useState(genList(11));
   const [array4, setArray4] = useState(genList(11));
   const [disabled, setDisabled] = useState(false);
@@ -52,6 +54,29 @@ export default function drag() {
         </div>
 
         <p>value: {JSON.stringify(array2.map((i) => i.id))}</p>
+      </Card>
+
+
+      <Card title="拖动排序-带有拖动把手、删除按钮" style={{ marginBottom: 12 }}>
+        <p>说明：1. 使用dnd-kit组件；2. 二次封装后使用更简单；</p>
+
+        <div style={{ width: 400 }}>
+          <FaSortList
+            list={arrayDel2}
+            renderItem={(i) => (
+              <div className="fa-flex-row-center" style={{ flex: 1 }}>
+                <div className="fa-flex-1">{i.name}</div>
+                <AuthDelBtn handleDelete={() => {}} />
+              </div>
+            )}
+            itemStyle={{ borderBottom: '1px solid #ccc' }}
+            onSortEnd={(l) => setArrayDel2(l)}
+            vertical
+            handle
+          />
+        </div>
+
+        <p>value: {JSON.stringify(arrayDel2.map((i) => i.id))}</p>
       </Card>
 
       <Card title="拖动排序-网格" style={{ marginBottom: 12 }}>
