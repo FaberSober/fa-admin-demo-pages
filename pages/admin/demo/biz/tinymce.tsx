@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Form, Input, Modal } from 'antd';
-import { BaseTinyMCE } from '@fa/ui';
+import {BaseTinyMCE, FaUtils} from '@fa/ui';
 
 /**
  * @author xu.pengfei
@@ -24,7 +24,30 @@ export default function tinymce() {
   return (
     <div className="fa-full-content fa-p12">
       <Card title="直接使用" className="fa-mb12">
-        <BaseTinyMCE style={{ width: 800, height: 500 }} />
+        <BaseTinyMCE style={{ width: 800, height: 300 }} />
+      </Card>
+
+      <Card title="自定义的工具栏" className="fa-mb12">
+        <ol>
+          <li>在toolbar中新增一个自定义的按钮key，如：faDateBtn</li>
+          <li>在setup方法中editor.ui.registry.addButton('faDateBtn', {})来新增自定义按钮</li>
+        </ol>
+        <BaseTinyMCE
+          style={{ width: 800, height: 300 }}
+          editorInit={{
+            toolbar: 'faDateBtn',
+            setup: (editor:any) => {
+              /* 插入当前日期 */
+              editor.ui.registry.addButton('faDateBtn', {
+                text: '日期',
+                tooltip: '插入当前日期',
+                onAction: function () {
+                  editor.insertContent(`<span>${FaUtils.getCurDate()}</span>`);
+                }
+              });
+            },
+          }}
+        />
       </Card>
 
       <Card title="在From表单中使用" className="fa-mb12">
@@ -33,7 +56,7 @@ export default function tinymce() {
             <Input placeholder="请输入文章标题" />
           </Form.Item>
           <Form.Item name="content" label="文章内容">
-            <BaseTinyMCE style={{ width: 800, height: 500 }} />
+            <BaseTinyMCE style={{ width: 800, height: 300 }} />
           </Form.Item>
           <Button onClick={() => form.submit()} type="primary">
             提交
