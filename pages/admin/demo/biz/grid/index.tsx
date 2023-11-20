@@ -2,6 +2,7 @@ import React from 'react';
 import { Card } from "antd";
 import { FaGridLayout } from "@/components";
 import { Layout } from "react-grid-layout";
+import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**
@@ -9,7 +10,7 @@ import { Layout } from "react-grid-layout";
  * @author xu.pengfei
  * @date 2023/1/8 15:25
  */
-export default function index() {
+export default function DemoAdvanceBizGrid() {
 
   function onLayoutChange(layout: Layout[]) {
     console.log('onLayoutChange', layout)

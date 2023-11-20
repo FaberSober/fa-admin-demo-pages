@@ -4,12 +4,13 @@ import {ApiEffectLayoutContext, FaFlexRestLayout, FaUtils} from '@fa/ui';
 import {ConfigLayoutContext} from "@/layout";
 import {redisTestApi, studentApi} from '@/services';
 import {Demo} from '@/types';
+import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 /**
  * @author xu.pengfei
  * @date 2022/12/7 22:10
  */
-export default function index() {
+export default function DemoAdvanceRedis() {
   const { loadingEffect } = useContext(ApiEffectLayoutContext);
   const { systemConfig } = useContext(ConfigLayoutContext);
   const [form] = Form.useForm();

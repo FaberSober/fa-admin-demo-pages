@@ -3,13 +3,14 @@ import {Card} from 'antd';
 import SocketSimple from "./cube/SocketSimple";
 import SocketTask from "./cube/SocketTask";
 import SocketTaskCube from "./cube/SocketTaskCube";
+import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**
  * @author xu.pengfei
  * @date 2022/12/6 13:55
  */
-export default function index() {
+export default function DemoAdvanceSocket() {
 
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">

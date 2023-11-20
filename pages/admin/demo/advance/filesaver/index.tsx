@@ -3,13 +3,14 @@ import { Button, Card, Space, Upload } from "antd";
 import MonacoEditor from "react-monaco-editor";
 import { FaUtils } from "@fa/ui";
 import { saveAs } from 'file-saver';
+import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**
  * @author xu.pengfei
  * @date 2023/7/15 16:32
  */
-export default function index() {
+export default function DemoAdvanceFileSaver() {
   const [data1, setData1] = useState(FaUtils.tryFormatJson('{"foo":"bar"}'))
   const [data2, setData2] = useState('')
 
