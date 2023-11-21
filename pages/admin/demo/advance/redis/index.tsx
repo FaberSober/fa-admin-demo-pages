@@ -4,7 +4,7 @@ import {ApiEffectLayoutContext, FaFlexRestLayout, FaUtils} from '@fa/ui';
 import {ConfigLayoutContext} from "@/layout";
 import {redisTestApi, studentApi} from '@/services';
 import {Demo} from '@/types';
-import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
+
 
 /**
  * @author xu.pengfei

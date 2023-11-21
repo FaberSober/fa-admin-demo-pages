@@ -2,7 +2,6 @@ import React from 'react';
 import { Card } from "antd";
 import { FaGridLayout } from "@/components";
 import { Layout } from "react-grid-layout";
-import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**

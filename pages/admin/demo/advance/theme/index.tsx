@@ -7,7 +7,7 @@ import {InputColor, ThemeLayoutContext} from "@fa/ui";
  * @author xu.pengfei
  * @date 2023/6/6 15:41
  */
-export default function index() {
+export default function DemoTheme() {
   const { setColorPrimary, themeDark, setThemeDark } = useContext(ThemeLayoutContext);
 
   function handleChangeThemeColor(color: string) {

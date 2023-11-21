@@ -3,7 +3,6 @@ import {Card} from 'antd';
 import SocketSimple from "./cube/SocketSimple";
 import SocketTask from "./cube/SocketTask";
 import SocketTaskCube from "./cube/SocketTaskCube";
-import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**

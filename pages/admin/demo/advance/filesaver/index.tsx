@@ -3,7 +3,6 @@ import { Button, Card, Space, Upload } from "antd";
 import MonacoEditor from "react-monaco-editor";
 import { FaUtils } from "@fa/ui";
 import { saveAs } from 'file-saver';
-import DemoAdvanceAgent from "@features/fa-admin-demo-pages/pages/admin/demo/advance/agent";
 
 
 /**
