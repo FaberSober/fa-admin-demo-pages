@@ -1,9 +1,10 @@
 import React from 'react';
 import {Card} from "antd";
-import {EchartsBar, EchartsPie, EchartsLine, EchartsGauge, EchartsGaugeStep} from "@/components";
+import { EchartsBar, EchartsPie, EchartsLine, EchartsGauge, EchartsGaugeStep } from "@/components";
 import EchartsDynamicDemo from "./cube/EchartsDynamicDemo";
 import EchartsBasicDemo from "./cube/EchartsBasicDemo";
-import EchartsSimpleDemo from "@features/fa-admin-demo-pages/pages/admin/demo/chart/cube/EchartsSimpleDemo";
+import EchartsSimpleDemo from "./cube/EchartsSimpleDemo";
+import EchartsBarStackDemo from "./cube/EchartsBarStackDemo";
 
 
 /**
@@ -78,8 +79,12 @@ export default function echartsDemo() {
         />
       </Card>
 
-      <Card title="ECharts 折线图" className="fa-mb12">
+      <Card title="ECharts 柱状图（叠加）" className="fa-mb12">
         <EchartsSimpleDemo />
+      </Card>
+
+      <Card title="ECharts 折线图" className="fa-mb12">
+        <EchartsBarStackDemo />
       </Card>
 
       <Card title="ECharts 动态表格" className="fa-mb12">
