@@ -10,7 +10,7 @@ import AMapSearchSelect from "@features/fa-admin-pages/components/map/AMapSearch
  * @author xu.pengfei
  * @date 2023/4/21 11:01
  */
-export default function basic() {
+export default function AMapBasic() {
   const geocoderRef = useRef<any>()
 
   const [pos, setPos] = useState<any>()
