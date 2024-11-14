@@ -11,7 +11,7 @@ export default function WebSocketSimple({ token }: any) {
   const messageHistory = useRef<any[]>([]);
 
   const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(
-    'ws://' + window.location.host + `/api/websocket/${token}`,
+    'ws://' + window.location.host + `/api/websocket/test/${token}`,
   );
 
   messageHistory.current = useMemo(
