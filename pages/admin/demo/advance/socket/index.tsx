@@ -12,7 +12,7 @@ export default function DemoAdvanceSocket() {
   return (
     <div className="fa-full-content fa-bg-white fa-p12 fa-flex-column">
       <Card title="socket连接简单示例" className="fa-mb12">
-        <WebSocketSimple />
+        <WebSocketSimple token="111" />
       </Card>
     </div>
   );

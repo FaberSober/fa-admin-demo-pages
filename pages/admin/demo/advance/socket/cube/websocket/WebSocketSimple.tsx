@@ -1,23 +1,17 @@
 import React, { useRef, useMemo } from 'react';
 import { useWebSocket } from 'ahooks';
+import { ReadyState } from "ahooks/es/useWebSocket";
 
-
-enum ReadyState {
-  Connecting = 0,
-  Open = 1,
-  Closing = 2,
-  Closed = 3,
-}
 
 /**
  * @author xu.pengfei
  * @date 2024/11/14 14:49
  */
-export default function WebSocketSimple() {
+export default function WebSocketSimple({ token }: any) {
   const messageHistory = useRef<any[]>([]);
 
   const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(
-    'ws://' + window.location.host + '/api/websocket/123',
+    'ws://' + window.location.host + `/api/websocket/${token}`,
   );
 
   messageHistory.current = useMemo(
@@ -47,8 +41,10 @@ export default function WebSocketSimple() {
       <button onClick={() => connect && connect()} disabled={readyState === ReadyState.Open}>
         {readyState === ReadyState.Connecting ? 'connecting' : '📞 connect'}
       </button>
+
       <div style={{ marginTop: 8 }}>readyState: {readyState}</div>
-      <div style={{ marginTop: 8 }}>
+
+      <div style={{ marginTop: 8, height: 200, overflowY: 'auto' }}>
         <p>received message: </p>
         {messageHistory.current.map((message, index) => (
           <p key={index} style={{ wordWrap: 'break-word' }}>
