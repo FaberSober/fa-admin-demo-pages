@@ -1,57 +1,55 @@
-import React, { useRef, useMemo } from 'react';
-import { useWebSocket } from 'ahooks';
-import { ReadyState } from "ahooks/es/useWebSocket";
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { WebSocketLayoutContext } from "@features/fa-admin-pages/layout/websocket";
+import useBus from "use-bus";
+import { Button, Input, Space } from "antd";
+import { FaUtils } from "@fa/ui";
 
 
 /**
  * @author xu.pengfei
- * @date 2024/11/14 14:49
+ * @date 2024/11/16 20:00
  */
-export default function WebSocketSimple({ token }: any) {
-  const messageHistory = useRef<any[]>([]);
+export default function WebSocketSimple() {
+  const msgList = useRef<any[]>([]);
 
-  const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(
-    'ws://' + window.location.host + `/api/websocket/test/${token}`,
-  );
+  const { sendMessage, latestMessage } = useContext(WebSocketLayoutContext);
+  const [input, setInput] = useState<string>();
 
-  messageHistory.current = useMemo(
-    () => messageHistory.current.concat(latestMessage),
-    [latestMessage],
-  );
+  useEffect(() => {
+    // console.log('latestMessage', latestMessage)
+  }, [latestMessage])
+
+  useBus(
+    ['@@ws/RECEIVE/test'],
+    ({ type, payload }) => {
+      console.log('callback', type, payload)
+    },
+    [],
+  )
+
+  function handleSend() {
+    const msg = input || ''
+    msgList.current.push({ type: 'user', msg, time: FaUtils.getCurDateTime()  });
+    sendMessage(JSON.stringify({ type: 'test', data: { msg } }));
+    setInput('');
+  }
 
   return (
     <div>
-      {/* send message */}
-      <button
-        onClick={() => sendMessage && sendMessage(`${Date.now()}`)}
-        disabled={readyState !== ReadyState.Open}
-        style={{ marginRight: 8 }}
-      >
-        ✉️ send
-      </button>
-      {/* disconnect */}
-      <button
-        onClick={() => disconnect && disconnect()}
-        disabled={readyState !== ReadyState.Open}
-        style={{ marginRight: 8 }}
-      >
-        ❌ disconnect
-      </button>
-      {/* connect */}
-      <button onClick={() => connect && connect()} disabled={readyState === ReadyState.Open}>
-        {readyState === ReadyState.Connecting ? 'connecting' : '📞 connect'}
-      </button>
+      <Space className="fa-mb12">
+        <Input value={input} onChange={(e) => setInput(e.target.value)} />
+        <Button onClick={handleSend}>发送</Button>
+      </Space>
 
-      <div style={{ marginTop: 8 }}>readyState: {readyState}</div>
-
-      <div style={{ marginTop: 8, height: 200, overflowY: 'auto' }}>
-        <p>received message: </p>
-        {messageHistory.current.map((message, index) => (
-          <p key={index} style={{ wordWrap: 'break-word' }}>
-            {message?.data}
-          </p>
+      <div style={{height: 200}}>
+        {msgList.current.map((m, i) => (
+          <div key={`${m}-${i}`} className="fa-flex-row-center">
+            <div style={{ color: '#F90', width: 150 }}>{m.time}</div>
+            <div style={{ color: '#F90', width: 80 }}>{m.type} : </div>
+            <div>{m.msg}</div>
+          </div>
         ))}
       </div>
     </div>
-  );
+  )
 }
