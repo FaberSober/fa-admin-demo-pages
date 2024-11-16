@@ -3,6 +3,7 @@ import { Card } from 'antd';
 import WebSocketBase from './cube/websocket/WebSocketBase';
 import WebSocketSimple from "./cube/websocket/WebSocketSimple";
 import WebSocketTask from "./cube/websocket/WebSocketTask";
+import WebSocketTaskCube from "./cube/websocket/WebSocketTaskCube";
 
 
 /**
@@ -24,6 +25,10 @@ export default function DemoAdvanceSocket() {
 
       <Card title="socket后端更新进度" className="fa-mb12">
         <WebSocketTask />
+      </Card>
+
+      <Card title="socket后端更新进度-封装代码" className="fa-mb12">
+        <WebSocketTaskCube />
       </Card>
     </div>
   );

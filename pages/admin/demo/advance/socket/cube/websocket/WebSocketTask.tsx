@@ -30,9 +30,10 @@ export default function WebSocketTask() {
   useBus(
     ['@@ws/RECEIVE/WebSocketTaskDemo'],
     ({ type, payload }) => {
+      if (payload.taskId !== task?.taskId) return;
       setTask(payload)
     },
-    [],
+    [task?.taskId],
   )
 
   function getPer() {
