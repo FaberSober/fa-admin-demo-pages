@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { WebSocketLayoutContext } from "@features/fa-admin-pages/layout/websocket";
 import useBus from "use-bus";
 import { Button, Input, Space } from "antd";
@@ -12,12 +12,8 @@ import { FaUtils } from "@fa/ui";
 export default function WebSocketSimple() {
   const msgList = useRef<any[]>([]);
 
-  const { sendMessage, latestMessage } = useContext(WebSocketLayoutContext);
+  const { sendMessage } = useContext(WebSocketLayoutContext);
   const [input, setInput] = useState<string>();
-
-  useEffect(() => {
-    // console.log('latestMessage', latestMessage)
-  }, [latestMessage])
 
   useBus(
     ['@@ws/RECEIVE/test'],
@@ -31,7 +27,7 @@ export default function WebSocketSimple() {
   function handleSend() {
     const msg = input || ''
     msgList.current.push({ type: 'user', msg, time: FaUtils.getCurDateTime() });
-    sendMessage(JSON.stringify({ type: 'test', data: { msg } }));
+    sendMessage({ type: 'test', data: { msg } });
     setInput('');
   }
 

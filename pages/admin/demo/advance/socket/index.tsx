@@ -2,6 +2,7 @@ import React from 'react';
 import { Card } from 'antd';
 import WebSocketBase from './cube/websocket/WebSocketBase';
 import WebSocketSimple from "./cube/websocket/WebSocketSimple";
+import WebSocketTask from "./cube/websocket/WebSocketTask";
 
 
 /**
@@ -18,6 +19,11 @@ export default function DemoAdvanceSocket() {
 
       <Card title="socket连接简单示例" className="fa-mb12">
         <WebSocketSimple />
+      </Card>
+
+
+      <Card title="socket后端更新进度" className="fa-mb12">
+        <WebSocketTask />
       </Card>
     </div>
   );
