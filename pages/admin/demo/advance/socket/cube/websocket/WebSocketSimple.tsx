@@ -22,14 +22,15 @@ export default function WebSocketSimple() {
   useBus(
     ['@@ws/RECEIVE/test'],
     ({ type, payload }) => {
-      console.log('callback', type, payload)
+      console.log('@@ws/RECEIVE/test', type, payload)
+      msgList.current.push({ type: 'system', msg: payload, time: FaUtils.getCurDateTime() });
     },
     [],
   )
 
   function handleSend() {
     const msg = input || ''
-    msgList.current.push({ type: 'user', msg, time: FaUtils.getCurDateTime()  });
+    msgList.current.push({ type: 'user', msg, time: FaUtils.getCurDateTime() });
     sendMessage(JSON.stringify({ type: 'test', data: { msg } }));
     setInput('');
   }
