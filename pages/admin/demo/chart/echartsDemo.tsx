@@ -5,6 +5,8 @@ import EchartsDynamicDemo from "./cube/EchartsDynamicDemo";
 import EchartsBasicDemo from "./cube/EchartsBasicDemo";
 import EchartsSimpleDemo from "./cube/EchartsSimpleDemo";
 import EchartsBarStackDemo from "./cube/EchartsBarStackDemo";
+import EchartsWeatherHourDemo from "./cube/EchartsWeatherHourDemo";
+import EchartsWeather7DayDemo from "./cube/EchartsWeather7DayDemo";
 
 
 /**
@@ -15,11 +17,19 @@ export default function echartsDemo() {
 
   return (
     <div className="fa-full-content fa-p12">
+      <Card title="ECharts 天气预报-逐小时" className="fa-mb12">
+        <EchartsWeatherHourDemo />
+      </Card>
+
+      <Card title="ECharts 天气预报-未来7天" className="fa-mb12">
+        <EchartsWeather7DayDemo />
+      </Card>
+
       <Card title="ECharts 入门示例" className="fa-mb12">
         <EchartsBasicDemo/>
       </Card>
 
-      <Card title="ECharts 封装示例" className="fa-mb12" bodyStyle={{display: 'flex', flexWrap: "wrap"}}>
+      <Card title="ECharts 封装示例" className="fa-mb12" styles={{body: {display: 'flex', flexWrap: "wrap"}}}>
         <EchartsBar
           title="Bar"
           subTitle="Bar Chart"
