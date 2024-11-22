@@ -24,7 +24,15 @@ export default function EchartsBasicDemo() {
         {
           name: '销量',
           type: 'bar',
-          data: [5, 20, 36, 10, 10, 20]
+          data: [5, 20, 36, 10, 10, 20],
+          label: {
+            show: true,
+            position: 'top',
+            formatter: (params:any) => params.value + '%' //图上数值显示格式
+          },
+          tooltip: { //鼠标移入图上数值显示格式
+            valueFormatter: (value:any) => value + ' %'
+          },
         }
       ]
     });
