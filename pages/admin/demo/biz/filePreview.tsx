@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Space } from "antd";
 import { FaFlexRestLayout, UploadFileLocal } from "@fa/ui";
-import FaFileView from "@features/fa-admin-pages/components/file/FaFileView";
+import { FaFileView } from "@features/fa-admin-pages/components";
 
 
 /**
