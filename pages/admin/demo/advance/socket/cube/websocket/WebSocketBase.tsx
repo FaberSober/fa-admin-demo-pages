@@ -10,8 +10,9 @@ import { ReadyState } from "ahooks/es/useWebSocket";
 export default function WebSocketBase({ token }: any) {
   const messageHistory = useRef<any[]>([]);
 
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
   const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(
-    'ws://' + window.location.host + `/api/websocket/test/${token}`,
+    wsProtocol + '://' + window.location.host + `/api/websocket/test/${token}`,
   );
 
   messageHistory.current = useMemo(
