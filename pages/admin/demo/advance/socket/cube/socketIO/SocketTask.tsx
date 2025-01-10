@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {FaUtils} from "@fa/ui";
 import {Button, Progress, Space} from "antd";
-import {Fa} from "@/types";
+import type {Fa} from "@/types";
 import {socketTaskTestApi} from "@features/fa-admin-demo-pages/services";
 import {useSocketIO} from "@features/fa-admin-pages/hooks";
 

@@ -11,7 +11,7 @@ import { Empty } from "antd";
  */
 export default function doc() {
 
-  const onDocumentReady = function (event:any) {
+  const onDocumentReady = (event:any) => {
     console.log("Document is loaded", event);
   };
 

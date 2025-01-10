@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { FaUtils } from "@fa/ui";
 import { Button, Progress, Space, Tag } from "antd";
-import { Fa } from "@/types";
+import type { Fa } from "@/types";
 import { webSocketTaskTestApi } from "@features/fa-admin-demo-pages/services";
 import { WebSocketLayoutContext } from "@features/fa-admin-pages/layout/websocket";
 import useBus from "use-bus";

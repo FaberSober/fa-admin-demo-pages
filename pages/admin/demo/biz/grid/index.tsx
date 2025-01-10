@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from "antd";
 import { FaGridLayout } from "@/components";
-import { Layout } from "react-grid-layout";
+import type { Layout } from "react-grid-layout";
 
 
 /**

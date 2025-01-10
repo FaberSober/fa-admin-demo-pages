@@ -2,9 +2,9 @@ import React, { useContext, useState } from 'react';
 import { get } from 'lodash';
 import { Button, DatePicker, Form, Input } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { ApiEffectLayoutContext, BaseBoolRadio, CommonModalProps, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
+import { ApiEffectLayoutContext, BaseBoolRadio, type CommonModalProps, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
 import { studentApi } from '@/services';
-import { Demo } from '@/types';
+import type { Demo } from '@/types';
 
 /**
  * Demo-学生表实体新增、编辑弹框

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Fa} from "@/types";
+import type {Fa} from "@/types";
 import {Button, Space} from "antd";
 import {webSocketTaskTestApi} from "@features/fa-admin-demo-pages/services";
 import {WebSocketTaskProgress, SocketTaskRemainTime} from "@features/fa-admin-pages/components";

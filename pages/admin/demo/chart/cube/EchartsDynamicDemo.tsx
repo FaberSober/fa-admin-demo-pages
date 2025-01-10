@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {EChartsOption} from "echarts";
+import type {EChartsOption} from "echarts";
 import {cloneDeep} from "lodash";
 import {useInterval} from "ahooks";
 import {EchartsBase} from "@features/fa-admin-pages/components";
@@ -51,7 +51,7 @@ export default function EchartsDynamicDemo() {
       {
         type: 'category',
         boundaryGap: true,
-        data: (function (){
+        data: (()=> {
           let now = new Date();
           const res = [];
           let len = 50;
@@ -65,7 +65,7 @@ export default function EchartsDynamicDemo() {
       {
         type: 'category',
         boundaryGap: true,
-        data: (function (){
+        data: (()=> {
           const res = [];
           let len = 50;
           while (len--) {
@@ -105,13 +105,9 @@ export default function EchartsDynamicDemo() {
           // }
         },
         animationEasing: 'elasticOut',
-        animationDelay: function (idx) {
-          return idx * 10;
-        },
-        animationDelayUpdate: function (idx) {
-          return idx * 10;
-        },
-        data:(function (){
+        animationDelay: (idx) => idx * 10,
+        animationDelayUpdate: (idx) => idx * 10,
+        data:(()=> {
           const res = [];
           let len = 50;
           while (len--) {
@@ -123,7 +119,7 @@ export default function EchartsDynamicDemo() {
       {
         name:'最新成交价',
         type:'line',
-        data:(function (){
+        data:(()=> {
           const res = [];
           let len = 0;
           while (len < 50) {

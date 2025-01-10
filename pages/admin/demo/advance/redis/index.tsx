@@ -3,7 +3,7 @@ import {Alert, Button, Card, Form, Input} from 'antd';
 import {ApiEffectLayoutContext, FaFlexRestLayout, FaUtils} from '@fa/ui';
 import {ConfigLayoutContext} from "@/layout";
 import {redisTestApi, studentApi} from '@/services';
-import {Demo} from '@/types';
+import type {Demo} from '@/types';
 
 
 /**

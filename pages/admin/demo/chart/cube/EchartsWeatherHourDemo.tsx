@@ -146,9 +146,7 @@ export default function EchartsWeatherHourDemo() {
                 },
                 axisLabel: {
                   interval: 0,
-                  formatter: function (value, index) {
-                    return '{' + index + '| }\n{b|' + value + '}';
-                  },
+                  formatter: (value, index) => '{' + index + '| }\n{b|' + value + '}',
                   rich: {
                     // 0: {
                     //   backgroundColor: {

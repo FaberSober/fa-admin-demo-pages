@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import { useWebSocket } from 'ahooks';
 import { ReadyState } from "ahooks/es/useWebSocket";
+import { Button } from "antd";
 
 
 /**
@@ -23,25 +24,25 @@ export default function WebSocketBase({ token }: any) {
   return (
     <div>
       {/* send message */}
-      <button
+      <Button
         onClick={() => sendMessage && sendMessage(`${Date.now()}`)}
         disabled={readyState !== ReadyState.Open}
         style={{ marginRight: 8 }}
       >
         ✉️ send
-      </button>
+      </Button>
       {/* disconnect */}
-      <button
+      <Button
         onClick={() => disconnect && disconnect()}
         disabled={readyState !== ReadyState.Open}
         style={{ marginRight: 8 }}
       >
         ❌ disconnect
-      </button>
+      </Button>
       {/* connect */}
-      <button onClick={() => connect && connect()} disabled={readyState === ReadyState.Open}>
+      <Button onClick={() => connect && connect()} disabled={readyState === ReadyState.Open}>
         {readyState === ReadyState.Connecting ? 'connecting' : '📞 connect'}
-      </button>
+      </Button>
 
       <div style={{ marginTop: 8 }}>readyState: {readyState}</div>
 

@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { get } from 'lodash';
 import { Form, Input } from 'antd';
-import { ApiEffectLayoutContext, DragModal, DragModalProps, FaUtils } from '@fa/ui';
+import { ApiEffectLayoutContext, DragModal, type DragModalProps, FaUtils } from '@fa/ui';
 import { treeApi as api } from '@/services';
-import { Admin } from '@/types';
+import type { Admin } from '@/types';
 import TreeCascade from '../helper/TreeCascade';
 
 const serviceName = 'Tree数据';

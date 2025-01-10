@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Modal } from "antd";
-import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
+import { Item, type ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { EditOutlined } from "@ant-design/icons";
 
 

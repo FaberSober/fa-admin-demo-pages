@@ -2,8 +2,7 @@ import React from 'react';
 import { Card, DatePicker } from "antd";
 
 
-export interface datepickerProps {
-}
+export type datepickerProps = {}
 
 /**
  * @author xu.pengfei

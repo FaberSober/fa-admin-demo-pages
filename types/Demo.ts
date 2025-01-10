@@ -1,4 +1,4 @@
-import { Fa } from '@fa/ui';
+import type { Fa } from '@fa/ui';
 
 namespace Demo {
   /** Demo-学生表-标签 */

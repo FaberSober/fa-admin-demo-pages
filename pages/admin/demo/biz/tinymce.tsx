@@ -41,7 +41,7 @@ export default function tinymce() {
               editor.ui.registry.addButton('faDateBtn', {
                 text: '日期',
                 tooltip: '插入当前日期',
-                onAction: function () {
+                onAction: () => {
                   editor.insertContent(`<span>${FaUtils.getCurDate()}</span>`);
                 }
               });

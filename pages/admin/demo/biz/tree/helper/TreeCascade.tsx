@@ -1,7 +1,7 @@
 import React from 'react';
-import { BaseCascader, BaseCascaderProps } from '@fa/ui';
+import { BaseCascader, type BaseCascaderProps } from '@fa/ui';
 import { treeApi as api } from '@/services';
-import { Demo } from '@/types';
+import type { Demo } from '@/types';
 
 /**
  * @author xu.pengfei

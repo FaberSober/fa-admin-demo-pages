@@ -1,8 +1,7 @@
 import React from 'react';
 
 
-export interface Hello2Props {
-}
+// export type Hello2Props = {}
 
 export function Hello2() {
   return (

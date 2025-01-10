@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Admin } from '@/types';
+import type { Admin } from '@/types';
 import { Card } from 'antd';
 import { AreaCascader } from '@/components';
 

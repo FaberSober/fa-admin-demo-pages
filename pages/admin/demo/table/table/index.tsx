@@ -2,9 +2,9 @@ import React from 'react';
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Space, Tag } from 'antd';
 import { isNil } from 'lodash';
-import { AuthDelBtn, BaseBizTable, BaseTableUtils, clearForm, FaberTable, useDelete, useExport, useTableQueryParams } from '@fa/ui';
+import { AuthDelBtn, BaseBizTable, BaseTableUtils, clearForm, type FaberTable, useDelete, useExport, useTableQueryParams } from '@fa/ui';
 import { studentApi } from '@/services';
-import { Demo } from '@/types';
+import type { Demo } from '@/types';
 import StudentModal from './modal/StudentModal';
 
 const serviceName = '学生表-表格查询示例';
@@ -93,7 +93,7 @@ export default function StudentList() {
         expandable={{
           expandedRowRender: (record: Demo.Student) => (
             <p style={{ margin: 0 }}>
-              info1: {record.info.info1}; info2: {record.info.info2};
+              info1: {record.info.info1}, info2: {record.info.info2}
             </p>
           ),
           rowExpandable: (record: Demo.Student) => !isNil(record.info),
