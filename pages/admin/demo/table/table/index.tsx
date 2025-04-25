@@ -13,7 +13,7 @@ const biz = 'demo_student';
 /**
  * Demo-学生表表格查询
  */
-export default function StudentList() {
+export default function DemoTableSimpleTable() {
   const [form] = Form.useForm();
 
   const {queryParams, setFormValues, handleTableChange, setSceneId, setConditionList, fetchPageList, loading, list, dicts, paginationProps} =
