@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
-import { Badge, Button, Checkbox, Input, message, Space, Tag } from "antd";
+import { Badge, Button, Checkbox, Input, message, Slider, Space, Tag, Tooltip } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
-import { isNil, trim } from "lodash";
+import { findIndex, isNil, trim } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
 import './index.scss'
 import { Checkboard } from "react-color";
@@ -31,6 +31,13 @@ function handleReadCache() {
     const cacheStr = localStorage.getItem('fa.demo.routeList')
     if (cacheStr) {
       routeList = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
+      routeList.forEach(route => {
+        route.roads.map((road, index) => {
+          if (index === route.roads.length - 1) {
+            road.type = 'end'
+          }
+        })
+      })
     }
   } catch (e) {}
 }
@@ -98,6 +105,8 @@ export default function AMapRouting() {
   const [searchResults, setSearchResults] = useState<SearchPOI[]>([])
   const [planing, setPlaning] = useState(false)
   const [clickJump, setClickJump] = useState(false)
+  const [searchNearBy, setSearchNearBy] = useState(true)
+  const [searchRadius, setSearchRadius] = useState(10)
 
   const roads = route ? route.roads : [];
 
@@ -113,6 +122,10 @@ export default function AMapRouting() {
   function handleEditRoute(item: Route) {
     setMode('road')
     setRoute(item)
+    setRoadEditing(undefined)
+    setSearch(undefined)
+    setSearchResults([])
+    setPlaning(false)
   }
 
   function initPlugins() {
@@ -143,7 +156,8 @@ export default function AMapRouting() {
       setSearch(trim(searchName))
     }
     const placeSearch = placeSearchRef.current;
-    placeSearch.search(trim(searchName), (status:any, result:any) => {
+
+    const callback = (status:any, result:any) => {
       console.log('placeSearch', 'status', status, 'result', result)
       if (status === "complete") {
         //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
@@ -166,10 +180,38 @@ export default function AMapRouting() {
         }
       } else {
         setSearchResults([])
-        console.log("查询地点数据失败：" + result);
-        message.error("查询地点数据失败：" + result);
+        if (status === 'no_data') {
+          message.warning("未查询到数据，可以加大搜索范围")
+        } else {
+          console.log("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+        }
       }
-    });
+    }
+
+    let searchNearByFlag = searchNearBy
+    let cpoint = null; // 中心点坐标
+    const roadEditingIndex = findIndex(roads, i => i.id === roadEditing?.id)
+    if (roadEditingIndex === 0) {
+      searchNearByFlag = false
+    } else {
+      for (let i = roadEditingIndex - 1; i >= 0; i--) {
+        const preRoad = roads[i]
+        if (preRoad.loc) {
+          cpoint = [preRoad.loc.lng, preRoad.loc.lat]
+          break;
+        }
+      }
+      if (cpoint === null) {
+        searchNearByFlag = false;
+      }
+    }
+
+    if (searchNearByFlag) {
+      placeSearch.searchNearBy(trim(searchName), cpoint, searchRadius * 1000, callback);
+    } else {
+      placeSearch.search(trim(searchName), callback);
+    }
   }
 
   function handleClick(item: Road, index: number) {
@@ -321,7 +363,7 @@ export default function AMapRouting() {
       </Map>
 
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
-        <div id="fa-route-list" style={{ width: 340, height: '100%' }} className="fa-bg-white fa-radius">
+        <div id="fa-route-list" style={{ width: 360, height: '100%' }} className="fa-bg-white fa-radius">
           {mode === 'list' && (
             <div>
               <div>
@@ -392,6 +434,21 @@ export default function AMapRouting() {
                 onClear={() => setSearchResults([])}
                 onSearch={(value, event, source) => source?.source === 'input' && handleAddressToPos(value)}
               />
+            </div>
+            <div className="fa-flex-row-center fa-p4" style={{height: 42}}>
+              <div>
+                <Tooltip title="以上一个点的周边进行搜索">
+                  <Checkbox checked={searchNearBy} onChange={e => setSearchNearBy(e.target.checked)}>周边搜索</Checkbox>
+                </Tooltip>
+              </div>
+              {searchNearBy && (
+                <>
+                  <div className="fa-flex-1">
+                    <Slider value={searchRadius} onChange={setSearchRadius} onChangeComplete={(v) => {setSearchRadius(v)}} />
+                  </div>
+                  <div className="fa-ml4">{searchRadius}km</div>
+                </>
+              )}
             </div>
             <div className="fa-flex-column">
               {searchResults.map(i => {
