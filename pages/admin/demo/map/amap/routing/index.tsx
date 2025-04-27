@@ -281,7 +281,7 @@ export default function AMapRouting() {
         <FaResizeHorizontal domId="fa-route-list" position="right" minWidth={200} />
       </div>
 
-      <div style={{ position: 'absolute', top: 12, right: 12 }}>
+      <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12 }} className="fa-flex-column">
         <div id="fa-search-result" style={{width: 300, minHeight: 400}} className="fa-bg-white fa-radius">
           <div className="fa-text-center fa-p4">
             <Input.Search
@@ -303,7 +303,11 @@ export default function AMapRouting() {
             })}
           </div>
 
-          <div id="fa-driving-panel"></div>
+          <div className="fa-flex-1 fa-relative">
+            <div className="fa-full-content fa-scroll-auto-y">
+              <div id="fa-driving-panel"></div>
+            </div>
+          </div>
         </div>
         <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200} />
       </div>
