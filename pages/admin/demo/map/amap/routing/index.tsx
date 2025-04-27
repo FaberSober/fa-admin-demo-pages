@@ -1,35 +1,70 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
-import { Button, Input, message, Space, Tag } from "antd";
+import { Badge, Button, Input, message, Space, Tag } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
 import { isNil, trim } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
 import './index.scss'
 
-const routeStr = "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--（南京长江四桥）--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司"
-const routeList = routeStr.split(/[--]+/)
-console.log('routeList', routeList)
-
-const roadsArr:Road[] = routeList.map((item, index) => {
-  if (index === 0) {
-    return {
-      id: index, name: item, type: 'start',
-      loc: {lat: 32.122728, lng: 118.709028},
-    };
-  } else if (index === routeList.length - 1) {
-    return {
-      id: index, name: item, type: 'end',
-      loc: {lat: 31.357078, lng: 120.418357},
-    };
+let routeList: Route[] = [
+  {
+    id: 1,
+    routeStr: "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--（南京长江四桥）--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司",
+    roads: []
+  },
+  {
+    id: 2,
+    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-X202红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
+    roads: []
   }
-  return {
-    id: index, name: item, type: 'road'
-  };
+]
+
+routeList.forEach(i => {
+  i.roads = parseRouteStr(i.routeStr)
 })
+
+
+function handleReadCache() {
+  try {
+    const cacheStr = localStorage.getItem('fa.demo.routeList')
+    if (cacheStr) {
+      routeList = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
+    }
+  } catch (e) {}
+}
+
+function parseRouteStr(routeStr: string) {
+  const routeStrList = routeStr.split(/[--]+/)
+  console.log('routeList', routeStr)
+
+  const roadsArr:Road[] = routeStrList.map((item, index) => {
+    if (index === 0) {
+      return {
+        id: index, name: item, type: 'start',
+        // loc: {lat: 32.122728, lng: 118.709028},
+      };
+    } else if (index === routeStr.length - 1) {
+      return {
+        id: index, name: item, type: 'end',
+        // loc: {lat: 31.357078, lng: 120.418357},
+      };
+    }
+    return {
+      id: index, name: item, type: 'road'
+    };
+  })
+  return roadsArr;
+}
 
 interface Pos {
   lng: number;
   lat: number;
+}
+
+interface Route {
+  id: number;
+  routeStr: string;
+  roads: Road[];
 }
 
 interface Road {
@@ -53,11 +88,15 @@ interface SearchPOI {
  * @date 2025/4/27 10:16
  */
 export default function AMapRouting() {
-  const [roads, setRoads] = useState<Road[]>(roadsArr)
+  const [mode, setMode] = useState<'list'|'road'>('list')
+
+  const [route, setRoute] = useState<Route>() // 当前编辑的路径
   const [roadEditing, setRoadEditing] = useState<Road>()
   const [search, setSearch] = useState<string|undefined>()
   const [searchResults, setSearchResults] = useState<SearchPOI[]>([])
   const [planing, setPlaning] = useState(false)
+
+  const roads = route ? route.roads : [];
 
   const mapRef = useRef<any>();
   const drivingRef = useRef<any>();
@@ -67,6 +106,11 @@ export default function AMapRouting() {
     console.log('mapRef:', mapRef)
     handleReadCache()
   }, []);
+
+  function handleEditRoute(item: Route) {
+    setMode('road')
+    setRoute(item)
+  }
 
   function initPlugins() {
     // 搜索：https://lbs.amap.com/api/javascript-api-v2/tutorails/search-poi
@@ -85,15 +129,6 @@ export default function AMapRouting() {
       map: mapRef.current.map,
       panel: "fa-driving-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
     });
-  }
-
-  function handleReadCache() {
-    try {
-      const cacheStr = localStorage.getItem('fa.demo.routing')
-      if (cacheStr) {
-        setRoads(JSON.parse(localStorage.getItem('fa.demo.routing')!))
-      }
-    } catch (e) {}
   }
 
   // 使用geocoder做地理/逆地理编码
@@ -172,8 +207,16 @@ export default function AMapRouting() {
       }
       return r;
     })
-    setRoads(roadsNew)
-    localStorage.setItem('fa.demo.routing', JSON.stringify(roadsNew))
+    if (route) {
+      setRoute({ ...route, roads: roadsNew })
+      routeList = routeList.map(i => {
+        if (i.id === route.id) {
+          return { ...route, roads: roadsNew }
+        }
+        return i
+      })
+      localStorage.setItem('fa.demo.routeList', JSON.stringify(routeList))
+    }
   }
 
   function handlePlan() {
@@ -227,6 +270,11 @@ export default function AMapRouting() {
         }}
         onComplete={() => initPlugins()}
       >
+        <MapTypeControl
+          offset={[10, 110]}
+          position="RB"
+        />
+
         {roads.filter(i => i.loc).map(i => {
           const prefix = i.type === 'start' ? '起点' :
                           i.type === 'end' ? '终点' : '途径'
@@ -271,42 +319,61 @@ export default function AMapRouting() {
 
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
         <div id="fa-route-list" style={{ width: 340, height: '100%' }} className="fa-bg-white fa-radius">
-          <Space className="fa-p4">
-            <Button onClick={handlePlan} loading={planing}>规划路径</Button>
-            <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
-            <Button onClick={() => localStorage.setItem('fa.demo.routing', JSON.stringify(roads))}>暂存</Button>
-            <Button onClick={() => handleReadCache()}>读取</Button>
-          </Space>
-
-          {roads.map((item, index) => {
-            const editing = roadEditing?.id === item.id
-            let isLoc = !isNil(item.loc)
-            return (
-              <div
-                key={item.id}
-                className="fa-flex-row-center fa-hover"
-                style={{
-                  background: editing ? 'lightgreen' : 'transparent',
-                  paddingRight: 4,
-                }}
-                onClick={() => handleClick(item, index)}
-              >
-                {item.type === 'start' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
-                  <Tag color="#2db7f5" style={{margin: 0}}>起点</Tag>
-                </div>}
-                {item.type === 'road' && <div style={{ padding: 6, width: 60 }} className="fa-text-center">｜</div>}
-                {item.type === 'end' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
-                  <Tag color="#f50" style={{margin: 0}}>终点</Tag>
-                </div>}
-                <div className="fa-flex-1">{item.name}</div>
-                <div onClick={FaUtils.preventEvent}>
-                  {isLoc && <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => handleLocRoadItem(item)} />}
-                </div>
+          {mode === 'list' && (
+            <div>
+              <div>
+                {routeList.map(i => {
+                  return (
+                    <div key={i.id} className="fa-p12 fa-border-b fa-hover" onClick={() => handleEditRoute(i)}>
+                      <div>
+                        <Badge count={i.id} />
+                        <span>{i.routeStr}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
+            </div>
+          )}
+
+          {mode === 'road' && (
+            <div>
+              <Space className="fa-p4">
+                <Button onClick={handlePlan} loading={planing}>规划路径</Button>
+                <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
+              </Space>
+
+              {roads.map((item, index) => {
+                const editing = roadEditing?.id === item.id
+                let isLoc = !isNil(item.loc)
+                return (
+                  <div
+                    key={item.id}
+                    className="fa-flex-row-center fa-hover"
+                    style={{
+                      background: editing ? 'lightgreen' : 'transparent',
+                      paddingRight: 4,
+                    }}
+                    onClick={() => handleClick(item, index)}
+                  >
+                    {item.type === 'start' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
+                      <Tag color="#2db7f5" style={{margin: 0}}>起点</Tag>
+                    </div>}
+                    {item.type === 'road' && <div style={{padding: 6, width: 60}} className="fa-text-center">｜</div>}
+                    {item.type === 'end' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
+                      <Tag color="#f50" style={{margin: 0}}>终点</Tag>
+                    </div>}
+                    <div className="fa-flex-1">{item.name}</div>
+                    <div onClick={FaUtils.preventEvent}>
+                      {isLoc && <Button shape="circle" icon={<PlusOutlined/>} size="small" onClick={() => handleLocRoadItem(item)}/>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
-        <FaResizeHorizontal domId="fa-route-list" position="right" minWidth={200} />
+        <FaResizeHorizontal domId="fa-route-list" position="right" minWidth={200}/>
       </div>
 
       <div style={{position: 'absolute', top: 12, right: 12, bottom: 12}} className="fa-flex-column">
