@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
-import { Badge, Button, Input, message, Space, Tag } from "antd";
+import { Badge, Button, Checkbox, Input, message, Space, Tag } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
 import { isNil, trim } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
 import './index.scss'
+import { Checkboard } from "react-color";
 
 let routeList: Route[] = [
   {
@@ -23,6 +24,7 @@ routeList.forEach(i => {
   i.roads = parseRouteStr(i.routeStr)
 })
 
+handleReadCache()
 
 function handleReadCache() {
   try {
@@ -95,6 +97,7 @@ export default function AMapRouting() {
   const [search, setSearch] = useState<string|undefined>()
   const [searchResults, setSearchResults] = useState<SearchPOI[]>([])
   const [planing, setPlaning] = useState(false)
+  const [clickJump, setClickJump] = useState(false)
 
   const roads = route ? route.roads : [];
 
@@ -155,7 +158,7 @@ export default function AMapRouting() {
             }
           })
           setSearchResults(sr)
-          if (sr && sr[0]) {
+          if (clickJump && sr && sr[0]) {
             mapRef.current.map.panTo([sr[0].lng, sr[0].lat])
           }
         } else {
@@ -339,8 +342,10 @@ export default function AMapRouting() {
           {mode === 'road' && (
             <div>
               <Space className="fa-p4">
+                <Button onClick={() => setMode('list')}>返回</Button>
                 <Button onClick={handlePlan} loading={planing}>规划路径</Button>
                 <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
+                <Checkbox checked={clickJump} onChange={e => setClickJump(e.target.checked)}>搜索跳转</Checkbox>
               </Space>
 
               {roads.map((item, index) => {
@@ -377,26 +382,29 @@ export default function AMapRouting() {
       </div>
 
       <div style={{position: 'absolute', top: 12, right: 12, bottom: 12}} className="fa-flex-column">
-        <div id="fa-search-result" style={{width: 300, minHeight: 400}} className="fa-bg-white fa-radius">
-          <div className="fa-text-center fa-p4">
-            <Input.Search
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              allowClear
-              onClear={() => setSearchResults([])}
-              onSearch={(value, event, source) => source?.source === 'input' && handleAddressToPos(value)}
-            />
+        <div className="fa-relative">
+          <div id="fa-search-result" style={{width: 300, minHeight: 100}} className="fa-bg-white fa-radius">
+            <div className="fa-text-center fa-p4">
+              <Input.Search
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                allowClear
+                onClear={() => setSearchResults([])}
+                onSearch={(value, event, source) => source?.source === 'input' && handleAddressToPos(value)}
+              />
+            </div>
+            <div className="fa-flex-column">
+              {searchResults.map(i => {
+                return (
+                  <div key={i.id} className="fa-flex-row-center fa-hover">
+                    <div className="fa-flex-1 fa-p4" onClick={() => handleClickSearchResult(i)}>{i.name}</div>
+                    <Button type="text" size="small" onClick={() => handleSelSearchResult(i)}>选中</Button>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-          <div className="fa-flex-column">
-            {searchResults.map(i => {
-              return (
-                <div key={i.id} className="fa-flex-row-center fa-hover">
-                  <div className="fa-flex-1 fa-p4" onClick={() => handleClickSearchResult(i)}>{i.name}</div>
-                  <Button type="text" size="small" onClick={() => handleSelSearchResult(i)}>选中</Button>
-                </div>
-              )
-            })}
-          </div>
+          <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200}/>
         </div>
 
         <div className="fa-flex-1 fa-relative">
@@ -404,7 +412,6 @@ export default function AMapRouting() {
             <div id="fa-driving-panel"></div>
           </div>
         </div>
-        <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200}/>
       </div>
       {/*<Space style={{position: 'absolute', top: 12, right: 12}}>*/}
       {/*  <Button>Road</Button>*/}
