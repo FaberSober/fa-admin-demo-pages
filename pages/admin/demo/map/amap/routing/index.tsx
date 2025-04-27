@@ -60,9 +60,41 @@ export default function AMapRouting() {
   const [planing, setPlaning] = useState(false)
 
   const mapRef = useRef<any>();
+  const drivingRef = useRef<any>();
+  const placeSearchRef = useRef<any>();
+
   useEffect(() => {
     console.log('mapRef:', mapRef)
+    handleReadCache()
   }, []);
+
+  function initPlugins() {
+    // 搜索：https://lbs.amap.com/api/javascript-api-v2/tutorails/search-poi
+    placeSearchRef.current = new AMap.PlaceSearch({
+      pageSize: 10, //单页显示结果条数
+      pageIndex: 1, //页码
+      // city: "010", //兴趣点城市
+      // citylimit: true, //是否强制限制在设置的城市内搜索
+      // map: map, //展现结果的地图实例
+      // panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
+      autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
+    });
+
+    // 路线规划：https://lbs.amap.com/api/javascript-api-v2/tutorails/car-dir
+    drivingRef.current = new AMap.Driving({
+      map: mapRef.current.map,
+      panel: "fa-driving-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
+    });
+  }
+
+  function handleReadCache() {
+    try {
+      const cacheStr = localStorage.getItem('fa.demo.routing')
+      if (cacheStr) {
+        setRoads(JSON.parse(localStorage.getItem('fa.demo.routing')!))
+      }
+    } catch (e) {}
+  }
 
   // 使用geocoder做地理/逆地理编码
   function handleAddressToPos(searchName: string|undefined) {
@@ -72,15 +104,7 @@ export default function AMapRouting() {
     if (search !== trim(searchName)) {
       setSearch(trim(searchName))
     }
-    const placeSearch = new AMap.PlaceSearch({
-      pageSize: 10, //单页显示结果条数
-      pageIndex: 1, //页码
-      // city: "010", //兴趣点城市
-      // citylimit: true, //是否强制限制在设置的城市内搜索
-      // map: map, //展现结果的地图实例
-      // panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
-      autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
-    });
+    const placeSearch = placeSearchRef.current;
     placeSearch.search(trim(searchName), (status:any, result:any) => {
       console.log('placeSearch', 'status', status, 'result', result)
       if (status === "complete") {
@@ -121,6 +145,7 @@ export default function AMapRouting() {
   }
 
   function handleLocRoadItem(item: Road) {
+    setRoadEditing(item)
     if (isNil(item.loc)) {
       return;
     }
@@ -148,6 +173,7 @@ export default function AMapRouting() {
       return r;
     })
     setRoads(roadsNew)
+    localStorage.setItem('fa.demo.routing', JSON.stringify(roadsNew))
   }
 
   function handlePlan() {
@@ -162,10 +188,8 @@ export default function AMapRouting() {
       return;
     }
     setPlaning(true)
-    const driving = new AMap.Driving({
-      map: mapRef.current.map,
-      panel: "fa-driving-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
-    });
+    const driving = drivingRef.current
+    driving.clear()
     // const points = [
     //   // [start.loc.lng, start.loc.lat], //起始点坐标
     //   // [end.loc.lng, end.loc.lat], //终点坐标
@@ -201,6 +225,7 @@ export default function AMapRouting() {
             handleSelRoadEditingLoc(event.lnglat.lng, event.lnglat.lat)
           }
         }}
+        onComplete={() => initPlugins()}
       >
         {roads.filter(i => i.loc).map(i => {
           const prefix = i.type === 'start' ? '起点' :
@@ -245,9 +270,12 @@ export default function AMapRouting() {
       </Map>
 
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
-        <div id="fa-route-list" style={{ width: 300, height: '100%' }} className="fa-bg-white fa-radius">
+        <div id="fa-route-list" style={{ width: 340, height: '100%' }} className="fa-bg-white fa-radius">
           <Space className="fa-p4">
             <Button onClick={handlePlan} loading={planing}>规划路径</Button>
+            <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
+            <Button onClick={() => localStorage.setItem('fa.demo.routing', JSON.stringify(roads))}>暂存</Button>
+            <Button onClick={() => handleReadCache()}>读取</Button>
           </Space>
 
           {roads.map((item, index) => {
@@ -281,7 +309,7 @@ export default function AMapRouting() {
         <FaResizeHorizontal domId="fa-route-list" position="right" minWidth={200} />
       </div>
 
-      <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12 }} className="fa-flex-column">
+      <div style={{position: 'absolute', top: 12, right: 12, bottom: 12}} className="fa-flex-column">
         <div id="fa-search-result" style={{width: 300, minHeight: 400}} className="fa-bg-white fa-radius">
           <div className="fa-text-center fa-p4">
             <Input.Search
@@ -302,14 +330,14 @@ export default function AMapRouting() {
               )
             })}
           </div>
+        </div>
 
-          <div className="fa-flex-1 fa-relative">
-            <div className="fa-full-content fa-scroll-auto-y">
-              <div id="fa-driving-panel"></div>
-            </div>
+        <div className="fa-flex-1 fa-relative">
+          <div className="fa-full-content fa-scroll-auto-y">
+            <div id="fa-driving-panel"></div>
           </div>
         </div>
-        <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200} />
+        <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200}/>
       </div>
       {/*<Space style={{position: 'absolute', top: 12, right: 12}}>*/}
       {/*  <Button>Road</Button>*/}
