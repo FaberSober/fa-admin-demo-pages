@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
 import { Button, Input, message, Space, Tag } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
-import { isNil } from "lodash";
+import { isNil, trim } from "lodash";
 import { PlusOutlined } from "@ant-design/icons";
+import './index.scss'
 
 const routeStr = "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--（南京长江四桥）--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司"
 const routeList = routeStr.split(/[--]+/)
@@ -64,10 +65,15 @@ export default function AMapRouting() {
   }, []);
 
   // 使用geocoder做地理/逆地理编码
-  function handleAddressToPos(searchName: string) {
-    setSearch(searchName)
+  function handleAddressToPos(searchName: string|undefined) {
+    if (isNil(searchName) || trim(searchName) === '') {
+      return;
+    }
+    if (search !== trim(searchName)) {
+      setSearch(trim(searchName))
+    }
     const placeSearch = new AMap.PlaceSearch({
-      pageSize: 20, //单页显示结果条数
+      pageSize: 10, //单页显示结果条数
       pageIndex: 1, //页码
       // city: "010", //兴趣点城市
       // citylimit: true, //是否强制限制在设置的城市内搜索
@@ -75,7 +81,7 @@ export default function AMapRouting() {
       // panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
       autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
     });
-    placeSearch.search(searchName, (status:any, result:any) => {
+    placeSearch.search(trim(searchName), (status:any, result:any) => {
       console.log('placeSearch', 'status', status, 'result', result)
       if (status === "complete") {
         //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
@@ -104,9 +110,14 @@ export default function AMapRouting() {
     });
   }
 
-  function handleClick(item: Road) {
+  function handleClick(item: Road, index: number) {
     setRoadEditing(item)
-    handleAddressToPos(item.name)
+    let searchName = item.name
+    if (index > 1 && index < roads.length - 1) {
+      const preRoad = roads[index - 1]
+      searchName = preRoad.name + '与' + item.name + '交叉口'
+    }
+    handleAddressToPos(searchName)
   }
 
   function handleLocRoadItem(item: Road) {
@@ -122,13 +133,17 @@ export default function AMapRouting() {
 
   function handleSelSearchResult(item: SearchPOI) {
     mapRef.current.map.panTo([item.lng, item.lat])
+    handleSelRoadEditingLoc(item.lng, item.lat)
+  }
+
+  function handleSelRoadEditingLoc(lng: number, lat: number) {
     if (isNil(roadEditing)) {
       message.error("未选中左侧路径")
       return;
     }
     const roadsNew = roads.map(r => {
       if (r.id === roadEditing.id) {
-        return { ...r, loc: { lng: item.lng, lat: item.lat } }
+        return { ...r, loc: { lng, lat } }
       }
       return r;
     })
@@ -159,8 +174,9 @@ export default function AMapRouting() {
     // ]
     const startPoint = new AMap.LngLat(start.loc.lng, start.loc.lat)
     const endPoint = new AMap.LngLat(end.loc.lng, end.loc.lat)
+    const waypoints = roads.slice(1, roads.length - 1).filter(i => i.loc).map(i => new AMap.LngLat(i.loc.lng, i.loc.lat))
     //获取起终点规划线路
-    driving.search(startPoint, endPoint, {waypoints: []}, function (status: any, result: any) {
+    driving.search(startPoint, endPoint, {waypoints}, function (status: any, result: any) {
       setPlaning(false)
       console.log('search', 'status', status, 'result', result)
       if (status === "complete") {
@@ -175,11 +191,22 @@ export default function AMapRouting() {
   }
 
   return (
-    <div className="fa-full-content fa-bg-white">
-      <Map ref={mapRef} style={{height: '100%', width: '100%'}}>
+    <div className="fa-full-content fa-bg-white fa-routing">
+      <Map
+        ref={mapRef}
+        style={{height: '100%', width: '100%'}}
+        onClick={(event: any) => {
+          // console.log('点击事件！', event);
+          if (roadEditing) {
+            handleSelRoadEditingLoc(event.lnglat.lng, event.lnglat.lat)
+          }
+        }}
+      >
         {roads.filter(i => i.loc).map(i => {
           const prefix = i.type === 'start' ? '起点' :
                           i.type === 'end' ? '终点' : '途径'
+          const bgColor = i.type === 'start' ? 'lightcyan' :
+            i.type === 'end' ? 'lightsalmon' : 'lightgoldenrodyellow'
           return (
             <Marker
               key={i.id}
@@ -190,10 +217,11 @@ export default function AMapRouting() {
                 // 设置文本标注偏移量
                 // offset: new AMap.Pixel(20, 20),
                 // 设置文本标注内容
-                content: `<div class="info">${prefix}：${i.name}</div>`,
+                content: `<div class="fa-marker-info" style="background: ${bgColor}">${prefix}：${i.name}</div>`,
                 // 设置文本标注方位
                 direction: 'top'
               }}
+              onClick={() => setRoadEditing(i)}
             />
           )
         })}
@@ -207,10 +235,11 @@ export default function AMapRouting() {
               // 设置文本标注偏移量
               // offset: new AMap.Pixel(20, 20),
               // 设置文本标注内容
-              content: `<div class="info">${i.name}</div>`,
+              content: `<div class="fa-marker-info">${i.name}</div>`,
               // 设置文本标注方位
               direction: 'top'
             }}
+            onClick={() => handleSelSearchResult(i)}
           />
         ))}
       </Map>
@@ -221,29 +250,29 @@ export default function AMapRouting() {
             <Button onClick={handlePlan} loading={planing}>规划路径</Button>
           </Space>
 
-          {roads.map(i => {
-            const editing = roadEditing?.id === i.id
-            let isLoc = !isNil(i.loc)
+          {roads.map((item, index) => {
+            const editing = roadEditing?.id === item.id
+            let isLoc = !isNil(item.loc)
             return (
               <div
-                key={i.id}
+                key={item.id}
                 className="fa-flex-row-center fa-hover"
                 style={{
                   background: editing ? 'lightgreen' : 'transparent',
                   paddingRight: 4,
                 }}
-                onClick={() => handleClick(i)}
+                onClick={() => handleClick(item, index)}
               >
-                {i.type === 'start' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
+                {item.type === 'start' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
                   <Tag color="#2db7f5" style={{margin: 0}}>起点</Tag>
                 </div>}
-                {i.type === 'road' && <div style={{ padding: 6, width: 60 }} className="fa-text-center">｜</div>}
-                {i.type === 'end' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
+                {item.type === 'road' && <div style={{ padding: 6, width: 60 }} className="fa-text-center">｜</div>}
+                {item.type === 'end' && <div style={{ padding: 6, width: 60 }} className="fa-flex-column-center">
                   <Tag color="#f50" style={{margin: 0}}>终点</Tag>
                 </div>}
-                <div className="fa-flex-1">{i.name}</div>
+                <div className="fa-flex-1">{item.name}</div>
                 <div onClick={FaUtils.preventEvent}>
-                  {isLoc && <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => handleLocRoadItem(i)} />}
+                  {isLoc && <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => handleLocRoadItem(item)} />}
                 </div>
               </div>
             )
@@ -260,6 +289,7 @@ export default function AMapRouting() {
               onChange={e => setSearch(e.target.value)}
               allowClear
               onClear={() => setSearchResults([])}
+              onSearch={(value, event, source) => source?.source === 'input' && handleAddressToPos(value)}
             />
           </div>
           <div className="fa-flex-column">

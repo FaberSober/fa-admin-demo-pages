@@ -10,7 +10,7 @@ const VITE_APP_AMAP_KEY = import.meta.env.VITE_APP_AMAP_KEY;
  */
 export default function routing() {
   return (
-    <APILoader version="2.0.5" akey={VITE_APP_AMAP_KEY} plugins={['AMap.ToolBar', 'AMap.Driving', 'AMap.PlaceSearch']}>
+    <APILoader version="2.0.5" akey={VITE_APP_AMAP_KEY} plugins={['AMap.ToolBar', 'AMap.Driving', 'AMap.DragRoute', 'AMap.PlaceSearch']}>
       <Outlet />
     </APILoader>
   )
