@@ -22,7 +22,12 @@ let routeList: Route[] = [
     id: 3,
     routeStr: "江苏省南京市宇通大厦A座--清水亭东路--东南大学路--苏源大道--南京长安马自达汽车有限公司",
     roads: [],
-  }
+  },
+  {
+    id: 4,
+    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
+    roads: [],
+  },
 ]
 
 routeList.forEach(i => {
@@ -66,6 +71,7 @@ interface Pos {
   lng: number;
   lat: number;
 }
+type PosArr = [number, number]
 
 interface Route {
   id: number;
@@ -216,11 +222,50 @@ export default function AMapRouting() {
     }
   }
 
-  function mapSearch(searchName:string): Promise<SearchPOI[]> {
+  function mapSearch(searchName:string, type: string): Promise<SearchPOI[]> {
     return new Promise((resolve) => {
       const placeSearch = placeSearchRef.current;
       placeSearch.setPageSize(20)
+      placeSearch.setType(type)
       placeSearch.search(trim(searchName), (status:any, result:any) => {
+        console.log('placeSearch', 'status', status, 'result', result)
+        if (status === "complete") {
+          //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+          //查询成功时，result 即为对应的驾车导航信息
+          if (result && result.info === 'OK') {
+            const sr = result.poiList.pois.map((i:any) => {
+              return {
+                id: i.id,
+                name: i.name,
+                lng: i.location.lng,
+                lat: i.location.lat,
+              }
+            })
+            resolve(sr)
+          } else {
+            resolve([])
+          }
+        } else {
+          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          resolve([])
+        }
+      });
+    })
+  }
+
+  /**
+   *
+   * @param searchName
+   * @param cpoint
+   * @param searchRadius
+   * @param type 设置查询类别，多个类别用“|”分割，https://lbs.amap.com/api/javascript-api-v2/documentation#placesearch
+   */
+  function mapSearchNearBy(searchName:string, cpoint:PosArr, searchRadius:number, type: string): Promise<SearchPOI[]> {
+    return new Promise((resolve) => {
+      const placeSearch = placeSearchRef.current;
+      placeSearch.setPageSize(20)
+      placeSearch.setType(type)
+      placeSearch.searchNearBy(trim(searchName), cpoint, searchRadius, (status:any, result:any) => {
         console.log('placeSearch', 'status', status, 'result', result)
         if (status === "complete") {
           //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
@@ -309,6 +354,18 @@ export default function AMapRouting() {
     }
   }
 
+  function getPreRoadLoc(start: number): PosArr|null {
+    let cpoint:PosArr|null = null; // 中心点坐标
+    for (let j = start; j >= 0; j--) {
+      const preRoad = roads[j]
+      if (preRoad.loc) {
+        cpoint = [preRoad.loc.lng, preRoad.loc.lat]
+        break;
+      }
+    }
+    return cpoint;
+  }
+
   async function handleAutoPlan() {
     if (isNil(route)) return;
     setPlaning(true)
@@ -325,15 +382,25 @@ export default function AMapRouting() {
 
         // 确定搜索名称
         let searchName = road.name
-        if (preRoad && i > 1) {
+        if (preRoad && i > 1 && i < roads.length - 1) {
           searchName = preRoad.name + '与' + road.name + '交叉口'
         }
         console.log((i+1) + ".开始检索--" + searchName)
 
+        let preCpoint = getPreRoadLoc(i - 1)
+        let sr1: SearchPOI[] = []
+        let searchType = road.type === 'road' ? "交通地名|路口名|道路名" : "公司|企业|楼宇"
+
         // 先使用附近搜索
-        const sr1 = await mapSearch(searchName)
+        if (preCpoint) {
+          sr1 = await mapSearchNearBy(searchName, preCpoint, 100 * 1000, searchType)
+        }
 
         // 若附近搜索未检索到，使用全局搜索
+
+        if (sr1.length === 0) {
+          sr1 = await mapSearch(searchName, searchType)
+        }
 
         if (isNil(sr1) || sr1.length === 0) {
           console.warn("未检索到定位：" + road.name)
@@ -347,17 +414,41 @@ export default function AMapRouting() {
           }
           sr.distance = distance
         })
-        console.log('sr1', sr1)
         const srMin = minBy(sr1, i => i.distance)
         if (srMin) {
           road.loc = { lng: srMin.lng, lat: srMin.lat }
         }
+        console.log('srMin', srMin, 'sr1', sr1)
+        updateRoute(road)
+
+        await delay(1000)
       } catch (e) {
         console.log(e)
       }
     }
     setRoute({ ...route, roads })
     setPlaning(false)
+  }
+
+  function updateRoute(road: Road) {
+    if (isNil(route)) return;
+    setRoute({
+      ...route,
+      roads: route.roads.map(i => {
+        if (i.id === road.id) {
+          return { ...i, road }
+        }
+        return i;
+      })
+    })
+  }
+
+  function delay(time:number){
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(true)
+      }, time)
+    })
   }
 
   function handlePlan() {
@@ -461,7 +552,7 @@ export default function AMapRouting() {
       </Map>
 
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
-        <div id="fa-route-list" style={{ width: 380, height: '100%' }} className="fa-bg-white fa-radius">
+        <div id="fa-route-list" style={{ width: 420, height: '100%' }} className="fa-bg-white fa-radius">
           {mode === 'list' && (
             <div>
               <div>
@@ -568,7 +659,6 @@ export default function AMapRouting() {
               })}
             </div>
           </div>
-          <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200}/>
         </div>
 
         <div className="fa-flex-1 fa-relative">
@@ -576,6 +666,7 @@ export default function AMapRouting() {
             <div id="fa-driving-panel"></div>
           </div>
         </div>
+        <FaResizeHorizontal domId="fa-search-result" position="left" minWidth={200}/>
       </div>
       {/*<Space style={{position: 'absolute', top: 12, right: 12}}>*/}
       {/*  <Button>Road</Button>*/}
