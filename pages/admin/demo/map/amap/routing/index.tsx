@@ -120,7 +120,7 @@ export default function AMapRouting() {
   const [clickJump, setClickJump] = useState(false)
   const [searchNearBy, setSearchNearBy] = useState(true)
   const [searchRadius, setSearchRadius] = useState(10)
-  const [drivingResult, setDrivingResult] = useState()
+  const [drivingResult, setDrivingResult] = useState<any>()
 
   const roads = route ? route.roads : [];
 
@@ -274,6 +274,11 @@ export default function AMapRouting() {
   }
 
   function handleClick(item: Road, index: number) {
+    if (item.id === roadEditing?.id) {
+      setRoadEditing(undefined)
+      return;
+    }
+
     setRoadEditing(item)
     setTimeout(() => {
       let searchName = item.name
@@ -503,6 +508,49 @@ export default function AMapRouting() {
     });
   }
 
+  function handleRefineGoBack() {
+    // 查找掉头点，将重复点设置为新的途径点
+    if (isNil(drivingResult)) return;
+    const steps:any[] = drivingResult.routes[0].steps;
+    const stepPathList:any[] = []
+    steps.forEach(s => {
+      stepPathList.push(...s.path)
+    })
+    console.log('stepPathList', stepPathList)
+    roads.map((road) => {
+      if (road.type !== 'road') return;
+      if (isNil(road.loc)) return;
+
+      const roadLoc = [road.loc.lng, road.loc.lat]
+
+      let minDistance = undefined;
+      let preDistance = undefined;
+      for (let i = 0; i < stepPathList.length; i++) {
+        const step = stepPathList[i]
+        const distance = AMap.GeometryUtil.distance(roadLoc, [step.lng, step.lat])
+        if (minDistance === undefined) {
+          minDistance = distance;
+        }
+        if (preDistance === undefined) {
+          preDistance = distance;
+        }
+        if (distance < minDistance) {
+          minDistance = distance
+          // console.log('minDistance', minDistance, road.name)
+        }
+        if (distance < preDistance) {
+          console.log('靠近>>>', distance, road.name)
+        } else if (distance > preDistance) {
+          console.log('远离---', distance, road.name)
+        }
+        // 50米内的坐标
+
+
+        preDistance = distance;
+      }
+    })
+  }
+
   function handleClearPos() {
     if (isNil(route)) return;
     Modal.confirm({
@@ -602,6 +650,7 @@ export default function AMapRouting() {
                 <Button onClick={() => setMode('list')}>返回</Button>
                 <Button onClick={handleAutoPlan} loading={planing}>自动规划</Button>
                 <Button onClick={handlePlan} loading={planing}>规划路径</Button>
+                <Button onClick={handleRefineGoBack}>优化掉头</Button>
                 <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
                 <Button onClick={handleClearPos}>清空点位</Button>
                 <Checkbox checked={clickJump} onChange={e => setClickJump(e.target.checked)}>搜索跳转</Checkbox>
