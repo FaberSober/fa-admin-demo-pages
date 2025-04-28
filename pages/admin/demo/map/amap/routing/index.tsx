@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
-import { Badge, Button, Checkbox, Input, message, Slider, Space, Tag, Tooltip } from "antd";
+import { Badge, Button, Checkbox, Input, message, Modal, Slider, Space, Tag, Tooltip } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
-import { find, findIndex, isNil, minBy, trim } from "lodash";
+import { find, findIndex, isNil, max, maxBy, min, minBy, trim } from "lodash";
 import { LockOutlined, PlusOutlined, UnlockOutlined } from "@ant-design/icons";
+import similarity from "similarity";
 import './index.scss'
 
 
@@ -26,6 +27,11 @@ let routeList: Route[] = [
   {
     id: 4,
     routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
+    roads: [],
+  },
+  {
+    id: 5,
+    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-张家港保税区科创园",
     roads: [],
   },
 ]
@@ -94,6 +100,7 @@ interface SearchPOI {
   lng: number;
   lat: number;
   distance: number; // 与上一点的距离
+  similarity: number; // 综合权重：距离0.3+文本交叉口相似度0.3+文本道路名称相似度0.4
 }
 
 /**
@@ -107,6 +114,7 @@ export default function AMapRouting() {
   const [route, setRoute] = useState<Route>() // 当前编辑的路径
   const [roadEditing, setRoadEditing] = useState<Road>()
   const [search, setSearch] = useState<string|undefined>()
+  const [searchType, setSearchType] = useState<string|undefined>()
   const [searchResults, setSearchResults] = useState<SearchPOI[]>([])
   const [planing, setPlaning] = useState(false)
   const [clickJump, setClickJump] = useState(false)
@@ -154,49 +162,19 @@ export default function AMapRouting() {
   }
 
   // 使用geocoder做地理/逆地理编码
-  function handleAddressSearch(searchName: string|undefined) {
+  async function handleAddressSearch(searchName: string|undefined, type = '') {
     if (isNil(searchName) || trim(searchName) === '') {
       return;
     }
     if (search !== trim(searchName)) {
       setSearch(trim(searchName))
     }
-    const placeSearch = placeSearchRef.current;
-
-    const callback = (status:any, result:any) => {
-      console.log('placeSearch', 'status', status, 'result', result)
-      if (status === "complete") {
-        //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
-        //查询成功时，result 即为对应的驾车导航信息
-        if (result && result.info === 'OK') {
-          const sr = result.poiList.pois.map((i:any) => {
-            return {
-              id: i.id,
-              name: i.name,
-              lng: i.location.lng,
-              lat: i.location.lat,
-            }
-          })
-          setSearchResults(sr)
-          if (clickJump && sr && sr[0]) {
-            mapRef.current.map.panTo([sr[0].lng, sr[0].lat])
-          }
-        } else {
-          setSearchResults([])
-        }
-      } else {
-        setSearchResults([])
-        if (status === 'no_data') {
-          message.warning("未查询到数据，可以加大搜索范围")
-        } else {
-          console.log("查询地点数据失败：" + status + ":" + JSON.stringify(result));
-          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
-        }
-      }
+    if (type !== searchType) {
+      setSearchType(type)
     }
 
     let searchNearByFlag = searchNearBy
-    let cpoint = null; // 中心点坐标
+    let cpoint:PosArr|undefined = undefined; // 中心点坐标
     const roadEditingIndex = findIndex(roads, i => i.id === roadEditing?.id)
     if (roadEditingIndex === 0) {
       searchNearByFlag = false
@@ -208,17 +186,17 @@ export default function AMapRouting() {
           break;
         }
       }
-      if (cpoint === null) {
-        searchNearByFlag = false;
-      }
     }
 
-    if (searchNearByFlag) {
-      console.log('searchNearBy', 'searchName', searchName, 'cpoint', cpoint, 'searchRadius', searchRadius)
-      placeSearch.searchNearBy(trim(searchName), cpoint, searchRadius * 1000, callback);
+    let sr = []
+    if (searchNearByFlag && cpoint) {
+      sr = await mapSearchNearBy(trim(searchName), cpoint, searchRadius * 1000, type)
     } else {
-      console.log('search', 'searchName', searchName)
-      placeSearch.search(trim(searchName), callback);
+      sr = await mapSearch(trim(searchName), type)
+    }
+    setSearchResults(sr)
+    if (clickJump && sr && sr[0]) {
+      mapRef.current.map.panTo([sr[0].lng, sr[0].lat])
     }
   }
 
@@ -228,17 +206,19 @@ export default function AMapRouting() {
       placeSearch.setPageSize(20)
       placeSearch.setType(type)
       placeSearch.search(trim(searchName), (status:any, result:any) => {
-        console.log('placeSearch', 'status', status, 'result', result)
+        console.log('mapSearch', 'searchName', searchName, 'type', type, 'status', status, 'result', result)
         if (status === "complete") {
           //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
           //查询成功时，result 即为对应的驾车导航信息
           if (result && result.info === 'OK') {
-            const sr = result.poiList.pois.map((i:any) => {
+            const sr:SearchPOI[] = result.poiList.pois.map((i:any) => {
               return {
                 id: i.id,
                 name: i.name,
                 lng: i.location.lng,
                 lat: i.location.lat,
+                distance: NaN,
+                similarity: NaN,
               }
             })
             resolve(sr)
@@ -266,7 +246,7 @@ export default function AMapRouting() {
       placeSearch.setPageSize(20)
       placeSearch.setType(type)
       placeSearch.searchNearBy(trim(searchName), cpoint, searchRadius, (status:any, result:any) => {
-        console.log('placeSearch', 'status', status, 'result', result)
+        console.log('mapSearchNearBy', 'searchName', searchName, 'type', type, 'cpoint', cpoint, 'searchRadius', searchRadius, 'status', status, 'result', result)
         if (status === "complete") {
           //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
           //查询成功时，result 即为对应的驾车导航信息
@@ -277,6 +257,8 @@ export default function AMapRouting() {
                 name: i.name,
                 lng: i.location.lng,
                 lat: i.location.lat,
+                distance: i.distance,
+                similarity: NaN,
               }
             })
             resolve(sr)
@@ -293,12 +275,15 @@ export default function AMapRouting() {
 
   function handleClick(item: Road, index: number) {
     setRoadEditing(item)
-    let searchName = item.name
-    if (index > 1 && index < roads.length - 1) {
-      const preRoad = roads[index - 1]
-      searchName = preRoad.name + '与' + item.name + '交叉口'
-    }
-    handleAddressSearch(searchName)
+    setTimeout(() => {
+      let searchName = item.name
+      if (index > 1 && index < roads.length - 1) {
+        const preRoad = roads[index - 1]
+        searchName = preRoad.name + '与' + item.name + '交叉口'
+      }
+      const searchType = item.type === 'road' ? "交通地名|路口名|道路名" : "公司|企业|楼宇"
+      handleAddressSearch(searchName, searchType)
+    }, 250)
   }
 
   function handleLockRoadItem(item: Road, lockPos: boolean) {
@@ -315,6 +300,7 @@ export default function AMapRouting() {
   }
 
   function handleLocRoadItem(item: Road) {
+    console.log('click', item)
     setRoadEditing(item)
     if (isNil(item.loc)) {
       return;
@@ -397,7 +383,6 @@ export default function AMapRouting() {
         }
 
         // 若附近搜索未检索到，使用全局搜索
-
         if (sr1.length === 0) {
           sr1 = await mapSearch(searchName, searchType)
         }
@@ -413,8 +398,35 @@ export default function AMapRouting() {
             distance = AMap.GeometryUtil.distance([preRoad.loc.lng, preRoad.loc.lat], [sr.lng, sr.lat])
           }
           sr.distance = distance
+          sr.similarity = distance
         })
-        const srMin = minBy(sr1, i => i.distance)
+        // 过滤距离太远的，只取100km范围内的点
+        sr1 = sr1.filter(i => i.distance < 100 * 1000) // 过滤100km范围内的点
+        // 计算文本相似度
+        const distanceArr = sr1.map(i => i.distance)
+        const minDis = min(distanceArr) as number
+        const maxDis = max(distanceArr) as number
+        const deltaDis = maxDis - minDis
+        sr1.forEach(sr => {
+          const simi1 = similarity(searchName, sr.name)
+          // console.log('simi1', simi1, searchName, sr.name)
+
+          const simi2 = similarity(road.name, sr.name)
+          // console.log('simi2', simi2, road.name, sr.name)
+
+          // 将距离映射到[0,1]的区间内做权重计算
+          const delta = sr.distance - minDis;
+          let simi3 = 0;
+          if (deltaDis > 0) {
+            simi3 = delta / deltaDis
+          }
+          simi3 = 1 - simi3
+          // console.log('simi3', simi3, sr.distance, delta)
+
+          sr.similarity = 0.1 * simi1 + 0.2 * simi2 + 0.7 * simi3;
+        })
+
+        const srMin = maxBy(sr1, i => i.similarity)
         if (srMin) {
           road.loc = { lng: srMin.lng, lat: srMin.lat }
         }
@@ -474,7 +486,7 @@ export default function AMapRouting() {
     // ]
     const startPoint = new AMap.LngLat(start.loc.lng, start.loc.lat)
     const endPoint = new AMap.LngLat(end.loc.lng, end.loc.lat)
-    const waypoints = roads.slice(1, roads.length - 1).filter(i => i.loc).map(i => new AMap.LngLat(i.loc.lng, i.loc.lat))
+    const waypoints = roads.slice(1, roads.length - 1).filter(i => i.loc).map(i => new AMap.LngLat(i.loc!.lng, i.loc!.lat))
     //获取起终点规划线路
     driving.search(startPoint, endPoint, {waypoints}, function (status: any, result: any) {
       setPlaning(false)
@@ -489,6 +501,20 @@ export default function AMapRouting() {
         message.error("获取驾车数据失败：" + result);
       }
     });
+  }
+
+  function handleClearPos() {
+    if (isNil(route)) return;
+    Modal.confirm({
+      title: '清空点位',
+      content: '确认清空点位？',
+      onOk: () => {
+        setRoute({
+          ...route,
+          roads: route.roads.map(i => ({ ...i, lockPos: false, loc: undefined }))
+        })
+      },
+    })
   }
 
   return (
@@ -577,6 +603,7 @@ export default function AMapRouting() {
                 <Button onClick={handleAutoPlan} loading={planing}>自动规划</Button>
                 <Button onClick={handlePlan} loading={planing}>规划路径</Button>
                 <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
+                <Button onClick={handleClearPos}>清空点位</Button>
                 <Checkbox checked={clickJump} onChange={e => setClickJump(e.target.checked)}>搜索跳转</Checkbox>
               </Space>
 
@@ -630,8 +657,11 @@ export default function AMapRouting() {
                 onChange={e => setSearch(e.target.value)}
                 allowClear
                 onClear={() => setSearchResults([])}
-                onSearch={(value, event, source) => source?.source === 'input' && handleAddressSearch(value)}
+                onSearch={(value, event, source) => source?.source === 'input' && handleAddressSearch(value, searchType)}
               />
+            </div>
+            <div className="fa-text-center fa-p4">
+              <Input value={searchType} onChange={e => setSearchType(e.target.value)} addonBefore="搜索类型" placeholder="设置查询类别，多个类别用“|”分割" />
             </div>
             <div className="fa-flex-row-center fa-p4" style={{height: 42}}>
               <div>
@@ -642,7 +672,9 @@ export default function AMapRouting() {
               {searchNearBy && (
                 <>
                   <div className="fa-flex-1">
-                    <Slider value={searchRadius} onChange={setSearchRadius} onChangeComplete={(v) => {setSearchRadius(v)}} />
+                    <Slider value={searchRadius} onChange={setSearchRadius} onChangeComplete={(v) => {
+                      setSearchRadius(v)
+                    }}/>
                   </div>
                   <div className="fa-ml4">{searchRadius}km</div>
                 </>
