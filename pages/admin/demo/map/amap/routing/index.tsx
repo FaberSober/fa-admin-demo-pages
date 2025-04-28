@@ -2,21 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
 import { Badge, Button, Checkbox, Input, message, Slider, Space, Tag, Tooltip } from "antd";
 import { FaUtils, FaResizeHorizontal } from "@fa/ui";
-import { findIndex, isNil, trim } from "lodash";
-import { PlusOutlined } from "@ant-design/icons";
+import { find, findIndex, isNil, minBy, trim } from "lodash";
+import { LockOutlined, PlusOutlined, UnlockOutlined } from "@ant-design/icons";
 import './index.scss'
-import { Checkboard } from "react-color";
+
 
 let routeList: Route[] = [
   {
     id: 1,
     routeStr: "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--（南京长江四桥）--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司",
-    roads: []
+    roads: [],
   },
   {
     id: 2,
     routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-X202红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
-    roads: []
+    roads: [],
+  },
+  {
+    id: 3,
+    routeStr: "江苏省南京市宇通大厦A座--清水亭东路--东南大学路--苏源大道--南京长安马自达汽车有限公司",
+    roads: [],
   }
 ]
 
@@ -30,13 +35,13 @@ function handleReadCache() {
   try {
     const cacheStr = localStorage.getItem('fa.demo.routeList')
     if (cacheStr) {
-      routeList = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
-      routeList.forEach(route => {
-        route.roads.map((road, index) => {
-          if (index === route.roads.length - 1) {
-            road.type = 'end'
-          }
-        })
+      const routeListCache = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
+      routeList = routeList.map(route => {
+        const findCache = find(routeListCache, i => i.id === route.id)
+        if (findCache) {
+          return { ...route, ...findCache }
+        }
+        return route;
       })
     }
   } catch (e) {}
@@ -44,23 +49,15 @@ function handleReadCache() {
 
 function parseRouteStr(routeStr: string) {
   const routeStrList = routeStr.split(/[--]+/)
-  console.log('routeList', routeStr)
+  // console.log('routeStrList', routeStrList)
 
   const roadsArr:Road[] = routeStrList.map((item, index) => {
     if (index === 0) {
-      return {
-        id: index, name: item, type: 'start',
-        // loc: {lat: 32.122728, lng: 118.709028},
-      };
-    } else if (index === routeStr.length - 1) {
-      return {
-        id: index, name: item, type: 'end',
-        // loc: {lat: 31.357078, lng: 120.418357},
-      };
+      return { id: index, name: item, type: 'start' };
+    } else if (index === routeStrList.length - 1) {
+      return { id: index, name: item, type: 'end' };
     }
-    return {
-      id: index, name: item, type: 'road'
-    };
+    return { id: index, name: item, type: 'road' };
   })
   return roadsArr;
 }
@@ -80,7 +77,8 @@ interface Road {
   id: number;
   type: 'start'|'road'|'end';
   name: string;
-  loc?: Pos; // end
+  lockPos?: boolean; // 是否锁定位置，锁定后，在自动规划中不会检索定位
+  loc?: Pos;
   path?: Pos[];
 }
 
@@ -89,6 +87,7 @@ interface SearchPOI {
   name: string;
   lng: number;
   lat: number;
+  distance: number; // 与上一点的距离
 }
 
 /**
@@ -107,6 +106,7 @@ export default function AMapRouting() {
   const [clickJump, setClickJump] = useState(false)
   const [searchNearBy, setSearchNearBy] = useState(true)
   const [searchRadius, setSearchRadius] = useState(10)
+  const [drivingResult, setDrivingResult] = useState()
 
   const roads = route ? route.roads : [];
 
@@ -148,7 +148,7 @@ export default function AMapRouting() {
   }
 
   // 使用geocoder做地理/逆地理编码
-  function handleAddressToPos(searchName: string|undefined) {
+  function handleAddressSearch(searchName: string|undefined) {
     if (isNil(searchName) || trim(searchName) === '') {
       return;
     }
@@ -208,10 +208,42 @@ export default function AMapRouting() {
     }
 
     if (searchNearByFlag) {
+      console.log('searchNearBy', 'searchName', searchName, 'cpoint', cpoint, 'searchRadius', searchRadius)
       placeSearch.searchNearBy(trim(searchName), cpoint, searchRadius * 1000, callback);
     } else {
+      console.log('search', 'searchName', searchName)
       placeSearch.search(trim(searchName), callback);
     }
+  }
+
+  function mapSearch(searchName:string): Promise<SearchPOI[]> {
+    return new Promise((resolve) => {
+      const placeSearch = placeSearchRef.current;
+      placeSearch.setPageSize(20)
+      placeSearch.search(trim(searchName), (status:any, result:any) => {
+        console.log('placeSearch', 'status', status, 'result', result)
+        if (status === "complete") {
+          //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+          //查询成功时，result 即为对应的驾车导航信息
+          if (result && result.info === 'OK') {
+            const sr = result.poiList.pois.map((i:any) => {
+              return {
+                id: i.id,
+                name: i.name,
+                lng: i.location.lng,
+                lat: i.location.lat,
+              }
+            })
+            resolve(sr)
+          } else {
+            resolve([])
+          }
+        } else {
+          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          resolve([])
+        }
+      });
+    })
   }
 
   function handleClick(item: Road, index: number) {
@@ -221,7 +253,20 @@ export default function AMapRouting() {
       const preRoad = roads[index - 1]
       searchName = preRoad.name + '与' + item.name + '交叉口'
     }
-    handleAddressToPos(searchName)
+    handleAddressSearch(searchName)
+  }
+
+  function handleLockRoadItem(item: Road, lockPos: boolean) {
+    if (isNil(route)) return;
+    setRoute({
+      ...route,
+      roads: route.roads.map(i => {
+        if (i.id === item.id) {
+          return { ...i, lockPos }
+        }
+        return i;
+      })
+    })
   }
 
   function handleLocRoadItem(item: Road) {
@@ -264,6 +309,57 @@ export default function AMapRouting() {
     }
   }
 
+  async function handleAutoPlan() {
+    if (isNil(route)) return;
+    setPlaning(true)
+    // 循环查询地点
+    for (let i = 0; i < roads.length; i++) {
+      try {
+        const road = roads[i]
+        console.log((i+1) + ".开始检索-------------" + road.name + "-------------")
+        if (road.lockPos) {
+          console.log('锁定位置，跳过自动检索')
+          continue;
+        }
+        let preRoad = i > 0 ? roads[i - 1] : null;
+
+        // 确定搜索名称
+        let searchName = road.name
+        if (preRoad && i > 1) {
+          searchName = preRoad.name + '与' + road.name + '交叉口'
+        }
+        console.log((i+1) + ".开始检索--" + searchName)
+
+        // 先使用附近搜索
+        const sr1 = await mapSearch(searchName)
+
+        // 若附近搜索未检索到，使用全局搜索
+
+        if (isNil(sr1) || sr1.length === 0) {
+          console.warn("未检索到定位：" + road.name)
+          continue;
+        }
+        // 从结果中找到最相近的结果， TODO 考虑使用相似度排序，或者按照距离远近排序
+        sr1.forEach(sr => {
+          let distance = 0;
+          if (preRoad?.loc) {
+            distance = AMap.GeometryUtil.distance([preRoad.loc.lng, preRoad.loc.lat], [sr.lng, sr.lat])
+          }
+          sr.distance = distance
+        })
+        console.log('sr1', sr1)
+        const srMin = minBy(sr1, i => i.distance)
+        if (srMin) {
+          road.loc = { lng: srMin.lng, lat: srMin.lat }
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    setRoute({ ...route, roads })
+    setPlaning(false)
+  }
+
   function handlePlan() {
     const start = roads[0]
     const end = roads[roads.length - 1]
@@ -276,6 +372,7 @@ export default function AMapRouting() {
       return;
     }
     setPlaning(true)
+    setDrivingResult(undefined)
     const driving = drivingRef.current
     driving.clear()
     // const points = [
@@ -295,6 +392,7 @@ export default function AMapRouting() {
         //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
         //查询成功时，result 即为对应的驾车导航信息
         console.log(result);
+        setDrivingResult(result)
       } else {
         console.log("获取驾车数据失败：" + result);
         message.error("获取驾车数据失败：" + result);
@@ -363,7 +461,7 @@ export default function AMapRouting() {
       </Map>
 
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
-        <div id="fa-route-list" style={{ width: 360, height: '100%' }} className="fa-bg-white fa-radius">
+        <div id="fa-route-list" style={{ width: 380, height: '100%' }} className="fa-bg-white fa-radius">
           {mode === 'list' && (
             <div>
               <div>
@@ -383,8 +481,9 @@ export default function AMapRouting() {
 
           {mode === 'road' && (
             <div>
-              <Space className="fa-p4">
+              <Space className="fa-p4 fa-flex-wrap">
                 <Button onClick={() => setMode('list')}>返回</Button>
+                <Button onClick={handleAutoPlan} loading={planing}>自动规划</Button>
                 <Button onClick={handlePlan} loading={planing}>规划路径</Button>
                 <Button onClick={() => drivingRef.current.clear()}>清空路径</Button>
                 <Checkbox checked={clickJump} onChange={e => setClickJump(e.target.checked)}>搜索跳转</Checkbox>
@@ -411,9 +510,17 @@ export default function AMapRouting() {
                       <Tag color="#f50" style={{margin: 0}}>终点</Tag>
                     </div>}
                     <div className="fa-flex-1">{item.name}</div>
-                    <div onClick={FaUtils.preventEvent}>
+                    <Space onClick={FaUtils.preventEvent}>
+                      {item.lockPos && (
+                        <Button shape="circle" icon={<LockOutlined/>} size="small" onClick={() => handleLockRoadItem(item, false)}></Button>
+                      )}
+                      {!item.lockPos && isLoc && (
+                        <Tooltip title="锁定位置，锁定后，在自动规划中不会检索定位">
+                          <Button shape="circle" icon={<UnlockOutlined />} size="small" className="fa-hover-show" onClick={() => handleLockRoadItem(item, true)}></Button>
+                        </Tooltip>
+                      )}
                       {isLoc && <Button shape="circle" icon={<PlusOutlined/>} size="small" onClick={() => handleLocRoadItem(item)}/>}
-                    </div>
+                    </Space>
                   </div>
                 )
               })}
@@ -423,7 +530,7 @@ export default function AMapRouting() {
         <FaResizeHorizontal domId="fa-route-list" position="right" minWidth={200}/>
       </div>
 
-      <div style={{position: 'absolute', top: 12, right: 12, bottom: 12}} className="fa-flex-column">
+      <div style={{position: 'absolute', top: 12, right: 12, bottom: drivingResult ? 12 : undefined }} className="fa-flex-column">
         <div className="fa-relative">
           <div id="fa-search-result" style={{width: 300, minHeight: 100}} className="fa-bg-white fa-radius">
             <div className="fa-text-center fa-p4">
@@ -432,7 +539,7 @@ export default function AMapRouting() {
                 onChange={e => setSearch(e.target.value)}
                 allowClear
                 onClear={() => setSearchResults([])}
-                onSearch={(value, event, source) => source?.source === 'input' && handleAddressToPos(value)}
+                onSearch={(value, event, source) => source?.source === 'input' && handleAddressSearch(value)}
               />
             </div>
             <div className="fa-flex-row-center fa-p4" style={{height: 42}}>
