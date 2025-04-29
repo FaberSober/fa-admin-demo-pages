@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Map, MapTypeControl, Marker} from '@uiw/react-amap';
 import { Badge, Button, Checkbox, Input, message, Modal, Slider, Space, Tag, Tooltip } from "antd";
-import { FaUtils, FaResizeHorizontal } from "@fa/ui";
+import { FaUtils, FaResizeHorizontal, FaFlexRestLayout } from "@fa/ui";
 import { find, findIndex, isNil, max, maxBy, min, minBy, trim } from "lodash";
 import { LockOutlined, PlusOutlined, UnlockOutlined } from "@ant-design/icons";
 import similarity from "similarity";
@@ -11,7 +11,7 @@ import './index.scss'
 let routeList: Route[] = [
   {
     id: 1,
-    routeStr: "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--（南京长江四桥）--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司",
+    routeStr: "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--南京栖霞山长江大桥--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司",
     roads: [],
   },
   {
@@ -37,6 +37,16 @@ let routeList: Route[] = [
   {
     id: 6,
     routeStr: "六合东收费站--南京栖霞山长江大桥--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站",
+    roads: [],
+  },
+  {
+    id: 7,
+    routeStr: "徐州达一重锻科技有限公司--G310---206国道--G310---徐州北收费站---G3京台高速--G2513淮徐高速--G1516盐洛高速-G1515盐靖高速--S28启扬高速--S35阜溧高速-G42沪蓉高速--G4221沪武高速--S23靖张高速--张家港保税区收费站--S604--S228杨锦公路--张家港中环海陆特锻股份有限公司",
+    roads: [],
+  },
+  {
+    id: 8,
+    routeStr: "迪讯科技产业园-通江中路-北海中路-华山北路-港城大道-丹阳东收费站-G42沪蓉高速-G4221--凤凰收费站--G204（张家港）--G346--G524汽渡路-通常汽渡-东方大道-通达路-张江路-江港路-叠港路-345国道-海门收费站-G40沪陕高速-启东北收费站-255省道-江海北路-启东城北工业园区",
     roads: [],
   },
 ]
@@ -370,7 +380,7 @@ export default function AMapRouting() {
 
   function getSearchType(road: Road) {
     if (road.type === 'start' || road.type === 'end') {
-      return "公司|企业|楼宇"
+      return "公司|企业|楼宇|商务住宅|产业园区|产业园区"
     }
     if (road.name.indexOf('收费站') > -1) {
       return "收费站"
@@ -703,7 +713,7 @@ export default function AMapRouting() {
       <div style={{ position: 'absolute', top: 12, left: 12, bottom: 12 }}>
         <div id="fa-route-list" style={{ width: 420, height: '100%' }} className="fa-bg-white fa-radius">
           {mode === 'list' && (
-            <div>
+            <div className="fa-full fa-scroll-auto-y">
               <div>
                 {routeList.map(i => {
                   return (
@@ -720,7 +730,7 @@ export default function AMapRouting() {
           )}
 
           {mode === 'road' && (
-            <div>
+            <div className="fa-flex-column fa-full">
               <Space className="fa-p4 fa-flex-wrap">
                 <Button onClick={() => setMode('list')}>返回</Button>
                 <Button onClick={handleAutoPlan} loading={planing}>自动规划</Button>
@@ -734,43 +744,45 @@ export default function AMapRouting() {
                 <Checkbox checked={clickJump} onChange={e => setClickJump(e.target.checked)}>搜索跳转</Checkbox>
               </Space>
 
-              {roads.map((item, index) => {
-                const editing = roadEditing?.id === item.id
-                let isLoc = !isNil(item.loc)
-                return (
-                  <div
-                    key={item.id}
-                    className="fa-flex-row-center fa-hover"
-                    style={{
-                      background: editing ? 'lightgreen' : 'transparent',
-                      paddingRight: 4,
-                    }}
-                    onClick={() => handleClick(item, index)}
-                  >
-                    {item.type === 'start' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
-                      <Tag color="#2db7f5" style={{margin: 0}}>起点</Tag>
-                    </div>}
-                    {item.type === 'road' && <div style={{padding: 6, width: 60}} className="fa-text-center">｜</div>}
-                    {item.type === 'end' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
-                      <Tag color="#f50" style={{margin: 0}}>终点</Tag>
-                    </div>}
-                    <div className="fa-flex-1">{item.name}</div>
-                    <Space onClick={FaUtils.preventEvent}>
-                      {item.lockPos && (
-                        <Tooltip title="锁定中，在自动规划中不会检索定位">
-                          <Button shape="circle" icon={<LockOutlined/>} size="small" onClick={() => handleLockRoadItem(item, false)}></Button>
-                        </Tooltip>
-                      )}
-                      {!item.lockPos && isLoc && (
-                        <Tooltip title="锁定位置，锁定后，在自动规划中不会检索定位">
-                          <Button shape="circle" icon={<UnlockOutlined />} size="small" className="fa-hover-show" onClick={() => handleLockRoadItem(item, true)}></Button>
-                        </Tooltip>
-                      )}
-                      {isLoc && <Button shape="circle" icon={<PlusOutlined/>} size="small" onClick={() => handleLocRoadItem(item)}/>}
-                    </Space>
-                  </div>
-                )
-              })}
+              <FaFlexRestLayout>
+                {roads.map((item, index) => {
+                  const editing = roadEditing?.id === item.id
+                  let isLoc = !isNil(item.loc)
+                  return (
+                    <div
+                      key={item.id}
+                      className="fa-flex-row-center fa-hover"
+                      style={{
+                        background: editing ? 'lightgreen' : 'transparent',
+                        paddingRight: 4,
+                      }}
+                      onClick={() => handleClick(item, index)}
+                    >
+                      {item.type === 'start' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
+                        <Tag color="#2db7f5" style={{margin: 0}}>起点</Tag>
+                      </div>}
+                      {item.type === 'road' && <div style={{padding: 6, width: 60}} className="fa-text-center">｜</div>}
+                      {item.type === 'end' && <div style={{padding: 6, width: 60}} className="fa-flex-column-center">
+                        <Tag color="#f50" style={{margin: 0}}>终点</Tag>
+                      </div>}
+                      <div className="fa-flex-1">{item.name}</div>
+                      <Space onClick={FaUtils.preventEvent}>
+                        {item.lockPos && (
+                          <Tooltip title="锁定中，在自动规划中不会检索定位">
+                            <Button shape="circle" icon={<LockOutlined/>} size="small" onClick={() => handleLockRoadItem(item, false)}></Button>
+                          </Tooltip>
+                        )}
+                        {!item.lockPos && isLoc && (
+                          <Tooltip title="锁定位置，锁定后，在自动规划中不会检索定位">
+                            <Button shape="circle" icon={<UnlockOutlined />} size="small" className="fa-hover-show" onClick={() => handleLockRoadItem(item, true)}></Button>
+                          </Tooltip>
+                        )}
+                        {isLoc && <Button shape="circle" icon={<PlusOutlined/>} size="small" onClick={() => handleLocRoadItem(item)}/>}
+                      </Space>
+                    </div>
+                  )
+                })}
+              </FaFlexRestLayout>
             </div>
           )}
         </div>
