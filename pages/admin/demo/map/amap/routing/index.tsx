@@ -226,7 +226,10 @@ export default function AMapRouting() {
             resolve([])
           }
         } else {
-          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          if (status !== 'no_data') {
+            message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          }
+          console.log("查询地点数据失败：" + status + ":" + JSON.stringify(result));
           resolve([])
         }
       });
@@ -266,7 +269,10 @@ export default function AMapRouting() {
             resolve([])
           }
         } else {
-          message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          if (status !== 'no_data') {
+            message.error("查询地点数据失败：" + status + ":" + JSON.stringify(result));
+          }
+          console.log("查询地点数据失败：" + status + ":" + JSON.stringify(result));
           resolve([])
         }
       });
@@ -445,6 +451,7 @@ export default function AMapRouting() {
     }
     setRoute({ ...route, roads })
     setPlaning(false)
+    message.success("自动规划完成")
   }
 
   function updateRoute(road: Road) {
