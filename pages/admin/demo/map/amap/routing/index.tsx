@@ -686,7 +686,9 @@ export default function AMapRouting() {
                     <div className="fa-flex-1">{item.name}</div>
                     <Space onClick={FaUtils.preventEvent}>
                       {item.lockPos && (
-                        <Button shape="circle" icon={<LockOutlined/>} size="small" onClick={() => handleLockRoadItem(item, false)}></Button>
+                        <Tooltip title="锁定中，在自动规划中不会检索定位">
+                          <Button shape="circle" icon={<LockOutlined/>} size="small" onClick={() => handleLockRoadItem(item, false)}></Button>
+                        </Tooltip>
                       )}
                       {!item.lockPos && isLoc && (
                         <Tooltip title="锁定位置，锁定后，在自动规划中不会检索定位">
