@@ -11,47 +11,7 @@ import './index.scss'
 let routeList: Route[] = [
   {
     id: 1,
-    routeStr: "南京市中车浦镇车辆有限公司--浦珠北路--浦珠中路-浦镇大街--沿山大道--G312--浦口收费站--G2503南京绕城高速--G36宁洛高速-G40沪陕高速--六合东收费站--南京栖霞山长江大桥--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站---西阳山路----普陀山路--苏州中车轨道交通车辆有限公司",
-    roads: [],
-  },
-  {
-    id: 2,
-    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-X202红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
-    roads: [],
-  },
-  {
-    id: 3,
-    routeStr: "江苏省南京市宇通大厦A座--清水亭东路--东南大学路--苏源大道--南京长安马自达汽车有限公司",
-    roads: [],
-  },
-  {
-    id: 4,
-    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-红旗路-澄鹿路-华陆路-华长路-长安大道-暨南大道-S259-S340-长八公路-金长路-惠际路-无锡隆迪精密锻件有限公司",
-    roads: [],
-  },
-  {
-    id: 5,
-    routeStr: "张家港市天优机械有限公司-新乐路-张皋路-港丰公路-港华路-张家港保税区科创园",
-    roads: [],
-  },
-  {
-    id: 6,
-    routeStr: "六合东收费站--南京栖霞山长江大桥--G2503南京绕城高速----G42沪蓉高速-G2京沪高速---S17苏台高速--S58沪常高速--天池山收费站",
-    roads: [],
-  },
-  {
-    id: 7,
-    routeStr: "徐州达一重锻科技有限公司--G310---206国道--G310---徐州北收费站---G3京台高速--G2513淮徐高速--G1516盐洛高速-G1515盐靖高速--S28启扬高速--S35阜溧高速-G42沪蓉高速--G4221沪武高速--S23靖张高速--张家港保税区收费站--S604--S228杨锦公路--张家港中环海陆特锻股份有限公司",
-    roads: [],
-  },
-  {
-    id: 8,
-    routeStr: "迪讯科技产业园-通江中路-北海中路-华山北路-港城大道-丹阳东收费站-G42沪蓉高速-G4221--凤凰收费站--G204（张家港）--G346--G524汽渡路-通常汽渡-东方大道-通达路-张江路-江港路-叠港路-345国道-海门收费站-G40沪陕高速-启东北收费站-255省道-江海北路-启东城北工业园区",
-    roads: [],
-  },
-  {
-    id: 9,
-    routeStr: "南高齿(淮安)高速齿轮制造有限公司-金石大道-G344-金湖收费站-S22-G25-G1516-G2-新沂东收费站-G311-江苏孚日玻璃科技有限公司",
+    routeStr: "故宫博物院-长安街-祈年大街-天坛公园",
     roads: [],
   },
 ]
@@ -60,23 +20,23 @@ routeList.forEach(i => {
   i.roads = parseRouteStr(i.routeStr)
 })
 
-handleReadCache()
+// handleReadCache()
 
-function handleReadCache() {
-  try {
-    const cacheStr = localStorage.getItem('fa.demo.routeList')
-    if (cacheStr) {
-      const routeListCache = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
-      routeList = routeList.map(route => {
-        const findCache = find(routeListCache, i => i.id === route.id)
-        if (findCache) {
-          return { ...route, ...findCache }
-        }
-        return route;
-      })
-    }
-  } catch (e) {}
-}
+// function handleReadCache() {
+//   try {
+//     const cacheStr = localStorage.getItem('fa.demo.routeList')
+//     if (cacheStr) {
+//       const routeListCache = JSON.parse(localStorage.getItem('fa.demo.routeList')!)
+//       routeList = routeList.map(route => {
+//         const findCache = find(routeListCache, i => i.id === route.id)
+//         if (findCache) {
+//           return { ...route, ...findCache }
+//         }
+//         return route;
+//       })
+//     }
+//   } catch (e) {}
+// }
 
 function parseRouteStr(routeStr: string) {
   const routeStrList = routeStr.split(/[--]+/)
@@ -154,7 +114,7 @@ export default function AMapRouting() {
 
   useEffect(() => {
     console.log('mapRef:', mapRef)
-    handleReadCache()
+    // handleReadCache()
   }, []);
 
   function handleEditRoute(item: Route) {
