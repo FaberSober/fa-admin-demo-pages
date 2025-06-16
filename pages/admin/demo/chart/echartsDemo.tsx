@@ -7,6 +7,7 @@ import EchartsSimpleDemo from "./cube/EchartsSimpleDemo";
 import EchartsBarStackDemo from "./cube/EchartsBarStackDemo";
 import EchartsWeatherHourDemo from "./cube/EchartsWeatherHourDemo";
 import EchartsWeather7DayDemo from "./cube/EchartsWeather7DayDemo";
+import EchartsRadarChatDemo from "./cube/EchartsRadarChatDemo";
 
 
 /**
@@ -87,6 +88,8 @@ export default function echartsDemo() {
           unit="%"
           style={{width: 500, height: 300}}
         />
+
+        <EchartsRadarChatDemo />
       </Card>
 
       <Card title="ECharts 柱状图（叠加）" className="fa-mb12">
