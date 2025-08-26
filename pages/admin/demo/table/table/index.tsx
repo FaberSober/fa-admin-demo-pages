@@ -39,6 +39,9 @@ export default function DemoTableSimpleTable() {
           return (r.tags || []).map((t) => <Tag key={t.name}>{t.name}</Tag>);
         },
       },
+      BaseTableUtils.genDictSorterColumn('字典值1', 'dict1', 100, sorter, dicts, 'base_dict_test_options'),
+      BaseTableUtils.genDictSorterColumn('字典值2', 'dict2', 100, sorter, dicts, 'base_dict_test_link_options'),
+      BaseTableUtils.genDictSorterColumn('字典值3', 'dict3', 100, sorter, dicts, 'base_dict_test_link_tree'),
       ...BaseTableUtils.genCtrColumns(sorter),
       ...BaseTableUtils.genUpdateColumns(sorter),
       {

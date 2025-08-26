@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { get } from 'lodash';
 import { Button, DatePicker, Form, Input } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { ApiEffectLayoutContext, BaseBoolRadio, type CommonModalProps, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
+import { ApiEffectLayoutContext, BaseBoolRadio, type CommonModalProps, DictDataSelector, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
 import { studentApi } from '@/services';
 import type { Demo } from '@/types';
 
@@ -54,6 +54,9 @@ export default function StudentModal({ children, title, record, fetchFinish, add
       email: get(record, 'email'),
       birthday: FaUtils.getInitialKeyTimeValue(record, 'birthday'),
       valid: get(record, 'valid'),
+      dict1: get(record, 'dict1'),
+      dict2: get(record, 'dict2'),
+      dict3: get(record, 'dict3'),
     };
   }
 
@@ -101,6 +104,15 @@ export default function StudentModal({ children, title, record, fetchFinish, add
           </Form.Item>
           <Form.Item name="valid" label="账户是否有效" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
             <BaseBoolRadio />
+          </Form.Item>
+          <Form.Item name="dict1" label="字典值1" rules={[{ required: true }]} tooltip='使用字典值（选择列表）base_dict_test_options'>
+            <DictDataSelector dictLabel='base_dict_test_options' placeholder="请输入字典值1" />
+          </Form.Item>
+          <Form.Item name="dict2" label="字典值2" rules={[{ required: true }]} tooltip='使用字典值（关联列表）base_dict_test_link_options'>
+            <DictDataSelector dictLabel='base_dict_test_link_options' placeholder="请输入字典值2" />
+          </Form.Item>
+          <Form.Item name="dict3" label="字典值3" rules={[{ required: true }]} tooltip='使用字典值（关联树）base_dict_test_link_tree'>
+            <DictDataSelector dictLabel='base_dict_test_link_tree' placeholder="请输入字典值3" />
           </Form.Item>
         </Form>
       </DragModal>
