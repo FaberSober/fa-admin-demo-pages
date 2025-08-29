@@ -1,8 +1,9 @@
 import React from 'react';
-import { List } from 'antd';
+import { Form, Input, List } from 'antd';
 import { FaApiScrollList } from '@features/fa-admin-pages/components';
 import { logApiApi } from '@features/fa-admin-pages/services';
 import { Admin } from '@features/fa-admin-pages/types';
+import { DictEnumApiSelector } from '@fa/ui';
 
 /**
  * 使用FaApiScrollList组件简化实现的API滚动列表示例
@@ -11,7 +12,7 @@ import { Admin } from '@features/fa-admin-pages/types';
  */
 export default function DemoApiScrollListSimple() {
   return (
-    <div className='fa-full-content'>
+    <div className='fa-full-content' style={{width: 400}}>
       <FaApiScrollList
         apiPage={logApiApi.page}
         renderItem={(item: Admin.LogApi) => (
@@ -24,6 +25,22 @@ export default function DemoApiScrollListSimple() {
               {item.url}
             </div>
           </List.Item>
+        )}
+        renderFilterFormItems={() => (
+          <div>
+            <Form.Item name="crud" label="类型">
+              <DictEnumApiSelector enumName="LogCrudEnum" allowClear />
+            </Form.Item>
+            <Form.Item name="biz" label="模块">
+              <Input placeholder="请输入模块" allowClear />
+            </Form.Item>
+            <Form.Item name="opr" label="操作">
+              <Input placeholder="请输入操作" allowClear />
+            </Form.Item>
+            <Form.Item name="url" label="URL">
+              <Input placeholder="请输入请求URL" allowClear />
+            </Form.Item>
+          </div>
         )}
       />
     </div>
