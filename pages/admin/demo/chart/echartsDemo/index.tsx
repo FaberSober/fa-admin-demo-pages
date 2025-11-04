@@ -14,7 +14,7 @@ import EchartsRadarChatDemo from "./cube/EchartsRadarChatDemo";
  * @author xu.pengfei
  * @date 2023/2/2 09:36
  */
-export default function echartsDemo() {
+export default function EchartsDemoPage() {
 
   return (
     <div className="fa-full-content fa-p12">
