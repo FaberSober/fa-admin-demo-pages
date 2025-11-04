@@ -1,286 +1,367 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
-// 模拟轨迹数据生成函数
-const generateTrackData = (points = 50) => {
-  return Array.from({ length: points }, (_, i) => ({
-    id: i,
-    lng: 116.3 + (i * 0.01) + (Math.random() - 0.5) * 0.02,
-    lat: 39.9 + (i * 0.008) + (Math.random() - 0.5) * 0.02,
-    speed: 30 + Math.random() * 40,
-    time: new Date(Date.now() - (points - i) * 10000).toISOString()
-  }));
-};
+// 全局标记：确保SDK只加载一次
+let isSdkLoaded = false;
+let globalMapInstance: any = null; // 全局地图实例
 
-const SimpleTrackingDemo = () => {
-  // 地图与轨迹状态
-  const mapRef = useRef(null);
-  const mapContainer = useRef(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [trackData, setTrackData] = useState([]);
-  const [currentPoint, setCurrentPoint] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [speed, setSpeed] = useState(1);
+// 地图配置接口
+interface MapConfig {
+  baseUrl: string;
+  accessToken: string;
+  solution: string;
+  styleUrl: string;
+  center: [number, number];
+  zoom: number; // 提高初始缩放级别
+}
 
-  // 定时器引用
-  const playbackTimer = useRef(null);
+// 点数据接口
+interface PointData {
+  id: string;
+  coordinates: [number, number];
+  name: string;
+}
+
+// 轨迹数据接口
+interface TrackData {
+  id: string;
+  coordinates: [number, number][];
+  name: string;
+}
+
+const Index: React.FC = () => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const debugLogRef = useRef<string[]>([]);
+
+  // 地图基础配置
+  const mapConfig = useMemo<MapConfig>(() => ({
+    baseUrl: 'https://znjt.suzhou.gov.cn',
+    accessToken: '25cc55a69ea7422182d00d6b7c0ffa93',
+    solution: '2365',
+    styleUrl: 'https://znjt.suzhou.gov.cn/service/solu/style/id/2365',
+    center: [120.61, 31.69],
+    zoom: 12, // 核心修改：提高初始缩放级别，让地图加载时更大
+  }), []);
+
+  // 模拟点数据
+  const pointData: PointData[] = [
+    { id: 'p1', coordinates: [120.61, 31.69], name: '起点' },
+    { id: 'p2', coordinates: [120.7, 31.72], name: '途经点A' },
+    { id: 'p3', coordinates: [120.78, 31.75], name: '途经点B' },
+    { id: 'p4', coordinates: [120.85, 31.8], name: '终点' }
+  ];
+
+  // 模拟轨迹数据
+  const trackData: TrackData = {
+    id: 't1',
+    coordinates: [
+      [120.61, 31.69],
+      [120.65, 31.7],
+      [120.7, 31.72],
+      [120.74, 31.73],
+      [120.78, 31.75],
+      [120.82, 31.78],
+      [120.85, 31.8]
+    ],
+    name: '测试轨迹'
+  };
+
+  // 添加调试日志
+  const addDebugLog = (log: string) => {
+    const logMsg = `[${new Date().toLocaleTimeString()}] ${log}`;
+    debugLogRef.current.push(logMsg);
+    debugLogRef.current = debugLogRef.current.slice(-10);
+    console.log(logMsg);
+  };
+
+  // 添加点标记
+  const addPoints = () => {
+    if (!globalMapInstance) return;
+
+    // 清除已有点图层
+    if (globalMapInstance.getSource('points-source')) {
+      globalMapInstance.removeLayer('points-layer');
+      globalMapInstance.removeSource('points-source');
+    }
+
+    // 创建点数据源
+    globalMapInstance.addSource('points-source', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: pointData.map(point => ({
+          type: 'Feature',
+          id: point.id,
+          geometry: { type: 'Point', coordinates: point.coordinates },
+          properties: { name: point.name }
+        }))
+      }
+    });
+
+    // 添加点图层
+    globalMapInstance.addLayer({
+      id: 'points-layer',
+      type: 'circle',
+      source: 'points-source',
+      paint: {
+        'circle-radius': 8,
+        'circle-color': '#FF5722',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#fff'
+      }
+    });
+
+    addDebugLog(`已添加${pointData.length}个点标记`);
+  };
+
+  // 添加轨迹线
+  const addTrack = () => {
+    if (!globalMapInstance) return;
+
+    // 清除已有轨迹图层
+    if (globalMapInstance.getSource('track-source')) {
+      globalMapInstance.removeLayer('track-layer');
+      globalMapInstance.removeSource('track-source');
+    }
+
+    // 创建轨迹数据源
+    globalMapInstance.addSource('track-source', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          id: trackData.id,
+          geometry: { type: 'LineString', coordinates: trackData.coordinates },
+          properties: { name: trackData.name }
+        }]
+      }
+    });
+
+    // 添加轨迹图层
+    globalMapInstance.addLayer({
+      id: 'track-layer',
+      type: 'line',
+      source: 'track-source',
+      paint: {
+        'line-width': 4,
+        'line-color': '#4285F4',
+        'line-opacity': 0.8
+      }
+    });
+
+    addDebugLog(`已添加轨迹：${trackData.name}`);
+  };
 
   // 初始化地图
   useEffect(() => {
-    // 加载地图SDK
-    const loadMapScript = () => {
-      if (window.SMap) {
-        initMap();
+    if (!mapRef.current) {
+      setError('未找到地图容器');
+      setIsLoading(false);
+      return;
+    }
+
+    // 复用已有实例
+    if (isSdkLoaded && globalMapInstance) {
+      globalMapInstance.setContainer(mapRef.current);
+      setIsLoading(false);
+      // 复用实例时也自动加载点和轨迹
+      addPoints();
+      addTrack();
+      return;
+    }
+
+    // 加载SDK
+    addDebugLog('加载地图SDK');
+    const scriptId = 'minemap-sdk-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = `${mapConfig.baseUrl}/minemapapi/v2.0.0/minemap.js`;
+      script.crossOrigin = 'anonymous';
+      document.head.appendChild(script);
+    }
+
+    // SDK加载成功处理
+    const handleSdkLoad = () => {
+      const minemap = (window as any).minemap;
+      if (!minemap) {
+        setError('SDK加载不完整');
+        setIsLoading(false);
         return;
       }
-      const script = document.createElement('script');
-      //ak秘钥
-      script.src = 'https://map.bdstar.com/api/js?v=3.0&ak=sf9e8fa15733897f0faa943c28def94fa4';
-      script.onload = initMap;
-      script.onerror = () => alert('地图加载失败，请检查AK配置');
-      document.body.appendChild(script);
 
-      return () => document.body.removeChild(script);
+      try {
+        // 配置全局参数
+        minemap.domainUrl = mapConfig.baseUrl;
+        minemap.dataDomainUrl = mapConfig.baseUrl;
+        minemap.spriteUrl = `${mapConfig.baseUrl}/minemapapi/v2.0.0/sprite/sprite`;
+        minemap.serviceUrl = `${mapConfig.baseUrl}/service/`;
+        minemap.accessToken = mapConfig.accessToken;
+        minemap.solution = mapConfig.solution;
+
+        // 创建地图实例
+        if (!globalMapInstance) {
+          globalMapInstance = new minemap.Map({
+            container: mapRef.current,
+            style: mapConfig.styleUrl,
+            center: mapConfig.center,
+            zoom: mapConfig.zoom, // 使用配置中的高缩放级别
+            pitch: 0,
+            attributionControl: false,
+          });
+
+          // 地图加载完成后自动添加点和轨迹
+          globalMapInstance.on('load', () => {
+            addDebugLog('地图加载完成，自动添加点和轨迹');
+            isSdkLoaded = true;
+            setIsLoading(false);
+            // 地图加载完成后立即调用添加点和轨迹的方法
+            addPoints();
+            addTrack();
+          });
+
+          // 错误处理
+          globalMapInstance.on('error', (err: any) => {
+            setError(`地图错误：${err.message}`);
+            setIsLoading(false);
+          });
+        }
+
+      } catch (err) {
+        setError(`初始化失败：${(err as Error).message}`);
+        setIsLoading(false);
+      }
     };
 
-    // 初始化地图实例
-    const initMap = () => {
-      if (!mapContainer.current || !window.SMap) return;
-
-      const map = new window.SMap(mapContainer.current, {
-        center: new window.SMap.LngLat(116.4, 39.9),
-        zoom: 12
-      });
-
-      // 添加地图图层
-      const layer = new window.SMap.TileLayer.Road();
-      map.addLayer(layer);
-
-      mapRef.current = map;
-      setMapLoaded(true);
-
-      // 生成并加载轨迹数据
-      const data = generateTrackData(80);
-      setTrackData(data);
-      setCurrentPoint(data[0]);
-      drawTrackLine(data);
-    };
-
-    const cleanup = loadMapScript();
-    return cleanup;
-  }, []);
-
-  // 绘制轨迹线
-  const drawTrackLine = (points) => {
-    if (!mapRef.current || points.length < 2) return;
-
-    // 转换坐标点
-    const path = points.map(p => new window.SMap.LngLat(p.lng, p.lat));
-
-    // 创建轨迹线
-    const line = new window.SMap.Polyline(path, {
-      style: new window.SMap.PolylineStyle({
-        strokeColor: '#3498db',
-        strokeWidth: 4,
-        strokeOpacity: 0.8
-      })
-    });
-
-    mapRef.current.addOverlay(line);
-    mapRef.current.setViewport(path); // 调整视野以显示全部轨迹
-  };
-
-  // 更新当前位置标记
-  const updateCurrentMarker = (point) => {
-    if (!mapRef.current || !point) return;
-
-    // 清除现有标记
-    if (window.currentMarker) {
-      mapRef.current.removeOverlay(window.currentMarker);
-    }
-
-    // 创建新标记
-    const marker = new window.SMap.Marker(
-      new window.SMap.LngLat(point.lng, point.lat),
-      {
-        icon: new window.SMap.Icon(
-          `<div style="width:24px;height:24px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white">
-            <i class="fa fa-car"></i>
-          </div>`,
-          new window.SMap.Size(24, 24),
-          new window.SMap.Pixel(-12, -12)
-        )
-      }
-    );
-
-    mapRef.current.addOverlay(marker);
-    window.currentMarker = marker;
-    mapRef.current.setCenter(new window.SMap.LngLat(point.lng, point.lat));
-  };
-
-  // 轨迹回放控制
-  const togglePlayback = () => {
-    if (!trackData.length) return;
-
-    if (isPlaying) {
-      // 暂停回放
-      setIsPlaying(false);
-      if (playbackTimer.current) {
-        clearInterval(playbackTimer.current);
-      }
+    // 绑定加载事件
+    if (script.readyState) {
+      script.onreadystatechange = () => {
+        if (script.readyState === 'loaded' || script.readyState === 'complete') {
+          script.onreadystatechange = null;
+          handleSdkLoad();
+        }
+      };
     } else {
-      // 开始回放
-      setIsPlaying(true);
-      playbackTimer.current = setInterval(() => {
-        setProgress(prev => {
-          // 到达终点时停止
-          if (prev >= trackData.length - 1) {
-            setIsPlaying(false);
-            clearInterval(playbackTimer.current);
-            return trackData.length - 1;
-          }
-
-          const next = prev + 1;
-          const point = trackData[next];
-          setCurrentPoint(point);
-          updateCurrentMarker(point);
-          return next;
-        });
-      }, 1000 / speed); // 速度控制
+      script.onload = handleSdkLoad;
     }
-  };
 
-  // 重置回放
-  const resetPlayback = () => {
-    setIsPlaying(false);
-    if (playbackTimer.current) {
-      clearInterval(playbackTimer.current);
-    }
-    setProgress(0);
-    if (trackData.length) {
-      setCurrentPoint(trackData[0]);
-      updateCurrentMarker(trackData[0]);
-    }
-  };
-
-  // 进度条控制
-  const handleProgressChange = (e) => {
-    const value = parseInt(e.target.value);
-    setProgress(value);
-    const point = trackData[value];
-    setCurrentPoint(point);
-    updateCurrentMarker(point);
-  };
-
-  // 组件卸载时清理
-  useEffect(() => {
-    return () => {
-      if (playbackTimer.current) {
-        clearInterval(playbackTimer.current);
-      }
+    // 加载失败处理
+    script.onerror = () => {
+      setError(`SDK加载失败：${script.src}`);
+      setIsLoading(false);
     };
-  }, []);
+
+    // 组件卸载清理
+    return () => {
+      if (globalMapInstance) {
+        globalMapInstance.remove();
+        globalMapInstance = null;
+      }
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      isSdkLoaded = false;
+      debugLogRef.current = [];
+    };
+
+  }, [mapConfig]);
+
+  // 显示调试日志
+  const showDebugLogs = () => {
+    alert(`调试日志：\n\n${debugLogRef.current.join('\n')}`);
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      {/* 标题栏 */}
-      <div style={{ padding: '1rem', background: '#2c3e50', color: 'white' }}>
-        <h2 style={{ margin: 0 }}>轨迹追踪与回放演示</h2>
-      </div>
-
-      {/* 地图容器 */}
-      <div ref={mapContainer} style={{ flex: 1, width: '100%' }}>
-        {!mapLoaded && (
-          <div style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#f5f5f5'
-          }}>
-            地图加载中...
-          </div>
-        )}
-      </div>
-
-      {/* 控制栏 */}
-      <div style={{
-        padding: '1rem',
-        background: 'white',
-        borderTop: '1px solid #eee'
-      }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>回放控制</h3>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <button
-              onClick={togglePlayback}
-              style={{
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                background: '#3498db',
-                color: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              {isPlaying ? '暂停' : '播放'}
-            </button>
-            <button
-              onClick={resetPlayback}
-              style={{
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                background: '#e74c3c',
-                color: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              重置
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1rem' }}>
-              <span style={{ marginRight: '0.5rem' }}>速度: {speed}x</span>
-              <input
-                type="range"
-                min="0.5"
-                max="5"
-                step="0.5"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                style={{ width: '100px' }}
-              />
-            </div>
-          </div>
-
-          {/* 进度条 */}
-          <div>
-            <input
-              type="range"
-              min="0"
-              max={trackData.length - 1 || 0}
-              value={progress}
-              onChange={handleProgressChange}
-              style={{ width: '100%' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#666' }}>
-              <span>进度: {progress + 1}/{trackData.length}</span>
-              {currentPoint && (
-                <span>
-                  位置: {currentPoint.lng.toFixed(6)},{currentPoint.lat.toFixed(6)}
-                </span>
-              )}
-            </div>
-          </div>
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      position: 'relative',
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden',
+      backgroundColor: '#f5f5f5',
+    }}>
+      {/* 加载中提示 */}
+      {isLoading && !error && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center',
+        }}>
+          <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '4px solid #4285F4', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <p>地图加载中...</p>
+          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
         </div>
+      )}
 
-        {/* 功能说明 */}
-        <div style={{ fontSize: '0.9rem', color: '#666', paddingTop: '0.5rem', borderTop: '1px dashed #eee' }}>
-          <p>功能: 轨迹连接显示、轨迹回放(播放/暂停/重置)、速度调节、实时位置追踪</p>
+      {/* 错误提示 */}
+      {error && (
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 200,
+          color: '#fff',
+          backgroundColor: 'rgba(255,0,0,0.9)',
+          padding: '12px 16px',
+          borderRadius: '4px',
+        }}>
+          {error}
+          <button onClick={showDebugLogs} style={{ marginTop: '8px' }}>查看日志</button>
         </div>
-      </div>
+      )}
+
+      {/* 地图容器：确保初始就占满全屏 */}
+      <div
+        ref={mapRef}
+        id="map-container"
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block', // 始终显示容器，避免加载时尺寸异常
+        }}
+      ></div>
+
+      {/* 功能按钮 */}
+      {!isLoading && !error && (
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+        }}>
+          <button
+            onClick={addPoints}
+            style={{ padding: '8px 12px', cursor: 'pointer' }}
+          >
+            重新添加点标记
+          </button>
+          <button
+            onClick={addTrack}
+            style={{ padding: '8px 12px', cursor: 'pointer' }}
+          >
+            重新添加轨迹
+          </button>
+          <button
+            onClick={showDebugLogs}
+            style={{ padding: '8px 12px', cursor: 'pointer' }}
+          >
+            调试日志
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default SimpleTrackingDemo;
+export default Index;
