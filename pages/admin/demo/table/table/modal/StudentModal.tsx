@@ -86,23 +86,23 @@ export default function StudentModal({ children, title, record, fetchFinish, add
         width={700}
         {...props}
       >
-        <Form form={form} onFinish={onFinish}>
-          <Form.Item name="name" label="学生名" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+        <Form form={form} onFinish={onFinish} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="name" label="学生名" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="age" label="年龄" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="age" label="年龄" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="sex" label="性别" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="sex" label="性别" rules={[{ required: true }]}>
             <DictEnumApiSelector enumName="SexEnum" />
           </Form.Item>
-          <Form.Item name="email" label="邮箱" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="email" label="邮箱">
             <Input />
           </Form.Item>
-          <Form.Item name="birthday" label="生日" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="birthday" label="生日" rules={[{ required: true }]}>
             <DatePicker />
           </Form.Item>
-          <Form.Item name="valid" label="账户是否有效" rules={[{ required: true }]} {...FaUtils.formItemFullLayout}>
+          <Form.Item name="valid" label="账户是否有效" rules={[{ required: true }]}>
             <BaseBoolRadio />
           </Form.Item>
           <Form.Item name="dict1" label="字典值1" rules={[{ required: true }]} tooltip='使用字典值（选择列表）base_dict_test_options'>
