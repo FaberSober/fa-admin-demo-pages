@@ -3,7 +3,7 @@ import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Space, Tag } from 'antd';
 import { isNil } from 'lodash';
 import { AuthDelBtn, BaseBizTable, BaseTableUtils, clearForm, type FaberTable, useDelete, useExport, useTableQueryParams } from '@fa/ui';
-import { studentApi } from '@/services';
+import { studentApi as api } from '@/services';
 import type { Demo } from '@/types';
 import StudentModal from './modal/StudentModal';
 
@@ -17,10 +17,10 @@ export default function DemoTableSimpleTable() {
   const [form] = Form.useForm();
 
   const {queryParams, setFormValues, handleTableChange, setSceneId, setConditionList, fetchPageList, loading, list, dicts, paginationProps} =
-    useTableQueryParams<Demo.Student>(studentApi.page, {}, serviceName);
+    useTableQueryParams<Demo.Student>(api.page, {}, serviceName);
 
-  const [handleDelete] = useDelete<number>(studentApi.remove, fetchPageList, serviceName);
-  const [exporting, fetchExportExcel] = useExport(studentApi.exportExcel, queryParams);
+  const [handleDelete] = useDelete<number>(api.remove, fetchPageList, serviceName);
+  const [exporting, fetchExportExcel] = useExport(api.exportExcel, queryParams);
 
   /** 生成表格字段List */
   function genColumns() {
@@ -90,7 +90,7 @@ export default function DemoTableSimpleTable() {
         dataSource={list}
         onChange={handleTableChange}
         refreshList={() => fetchPageList()}
-        batchDelete={(ids) => studentApi.removeBatchByIds(ids)}
+        batchDelete={(ids) => api.removeBatchByIds(ids)}
         onSceneChange={(v) => setSceneId(v)}
         onConditionChange={(cL) => setConditionList(cL)}
         expandable={{
