@@ -83,10 +83,10 @@ export default function StudentModal({ children, title, record, fetchFinish, add
         onOk={() => form.submit()}
         confirmLoading={loading}
         onCancel={() => setOpen(false)}
-        width={700}
+        width={800}
         {...props}
       >
-        <Form form={form} onFinish={onFinish} {...FaUtils.formItemFullLayout}>
+        <Form form={form} onFinish={onFinish} className='fa-grid2 fa-mt12' {...FaUtils.formItemHalfLayout}>
           <Form.Item name="name" label="学生名" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
