@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { get } from 'lodash';
 import { Button, DatePicker, Form, Input } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { ApiEffectLayoutContext, BaseBoolRadio, type CommonModalProps, DictDataSelector, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
+import { useApiLoading, BaseBoolRadio, type CommonModalProps, DictDataSelector, DictEnumApiSelector, DragModal, FaHref, FaUtils } from '@fa/ui';
 import { studentApi as api } from '@/services';
 import type { Demo } from '@/types';
 
@@ -10,10 +10,10 @@ import type { Demo } from '@/types';
  * Demo-学生表实体新增、编辑弹框
  */
 export default function StudentModal({ children, title, record, fetchFinish, addBtn, editBtn, ...props }: CommonModalProps<Demo.Student>) {
-  const { loadingEffect } = useContext(ApiEffectLayoutContext);
   const [form] = Form.useForm();
 
   const [open, setOpen] = useState(false);
+  const loading = useApiLoading([ api.getUrl('save'), api.getUrl('update')]);
 
   /** 新增Item */
   function invokeInsertTask(params: any) {
@@ -65,7 +65,6 @@ export default function StudentModal({ children, title, record, fetchFinish, add
     form.setFieldsValue(getInitialValues());
   }
 
-  const loading = loadingEffect[api.getUrl('save')] || loadingEffect[api.getUrl('update')];
   return (
     <span>
       <span onClick={showModal}>
