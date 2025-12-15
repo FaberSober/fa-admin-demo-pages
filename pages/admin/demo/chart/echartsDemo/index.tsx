@@ -8,6 +8,7 @@ import EchartsBarStackDemo from "./cube/EchartsBarStackDemo";
 import EchartsWeatherHourDemo from "./cube/EchartsWeatherHourDemo";
 import EchartsWeather7DayDemo from "./cube/EchartsWeather7DayDemo";
 import EchartsRadarChatDemo from "./cube/EchartsRadarChatDemo";
+import EchartsRoseChatDemo from './cube/EchartsRoseChatDemo';
 
 
 /**
@@ -90,6 +91,8 @@ export default function EchartsDemoPage() {
         />
 
         <EchartsRadarChatDemo />
+
+        <EchartsRoseChatDemo />
       </Card>
 
       <Card title="ECharts 柱状图（叠加）" className="fa-mb12">
