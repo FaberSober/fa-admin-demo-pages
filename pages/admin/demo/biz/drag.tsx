@@ -54,7 +54,7 @@ export default function DemoDragPage() {
         </Space>
       </Card>
 
-      <Card title="垂直拖动排序-整体拖动" style={{ marginBottom: 12 }}>
+      <Card title="拖动排序-整体拖动" style={{ marginBottom: 12 }}>
         <p>说明：1. 使用dnd-kit组件；2. 二次封装后使用更简单；</p>
 
         <div style={{ width: 500 }}>
