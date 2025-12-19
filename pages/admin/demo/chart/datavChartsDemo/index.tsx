@@ -2,6 +2,7 @@ import { Card } from 'antd';
 import React from 'react';
 import DatavChinaMapDemo from './cube/map/DatavChinaMapDemo';
 import DatavBarChartDemo from './cube/chart/DatavBarChartDemo';
+import DatavLineChartDemo from './cube/chart/DatavLineChartDemo';
 
 /**
  * @author xu.pengfei
@@ -13,6 +14,11 @@ export default function DatavChartsDemo() {
       <Card title="柱状图" className="fa-mb12">
         <div style={{ width: 800, height: 300 }}>
           <DatavBarChartDemo />
+        </div>
+      </Card>
+      <Card title="折线图" className="fa-mb12">
+        <div style={{ width: 800, height: 300 }}>
+          <DatavLineChartDemo />
         </div>
       </Card>
       <Card title="地图" className="fa-mb12">
