@@ -8,7 +8,7 @@ import { RDBSource } from 'district-data';
  * @author xu.pengfei
  * @date 2025-12-24 10:12:07
  */
-export default function DatavChinaMapGaoDeDemo() {
+export default function DatavChinaMapAMapDemo() {
   useEffect(() => {
     const scene = new Scene({
       id: 'map1',

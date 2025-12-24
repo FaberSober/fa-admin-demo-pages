@@ -4,7 +4,7 @@ import DatavChinaMapDemo from './cube/map/DatavChinaMapDemo';
 import DatavBarChartDemo from './cube/chart/DatavBarChartDemo';
 import DatavLineChartDemo from './cube/chart/DatavLineChartDemo';
 import DatavRingChartDemo from './cube/chart/DatavRingChartDemo';
-import DatavChinaMapGaoDeDemo from './cube/map/DatavChinaMapGaoDeDemo';
+import DatavChinaMapAMapDemo from './cube/map/DatavChinaMapAMapDemo';
 
 /**
  * @author xu.pengfei
@@ -48,7 +48,7 @@ export default function DatavChartsDemo() {
       </Card>
       <Card title="地图" className="fa-mb12">
         <div style={{ width: 800, height: 400 }}>
-          <DatavChinaMapGaoDeDemo />
+          <DatavChinaMapAMapDemo />
         </div>
       </Card>
     </div>
