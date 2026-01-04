@@ -41,7 +41,7 @@ export default function DatavMapBoxDemo() {
         latitude: 35,
         zoom: 3,
       }}
-      style={{ width: 1000, height: 600 }}
+      style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
     >
       {countryData && (
