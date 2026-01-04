@@ -6,6 +6,7 @@ import DatavLineChartDemo from './cube/chart/DatavLineChartDemo';
 import DatavRingChartDemo from './cube/chart/DatavRingChartDemo';
 import DatavChinaMapAMapDemo from './cube/map/DatavChinaMapAMapDemo';
 import DatavMapBoxDemo from './cube/map/DatavMapBoxDemo';
+import DatavMapBoxWith3DModelDemo from './cube/map/DatavMapBoxWith3DModelDemo';
 
 /**
  * @author xu.pengfei
@@ -55,6 +56,11 @@ export default function DatavChartsDemo() {
       <Card title="地图" className="fa-mb12">
         <div style={{ width: 800, height: 400 }}>
           <DatavMapBoxDemo />
+        </div>
+      </Card>
+      <Card title="地图（含3D模型）" className="fa-mb12">
+        <div style={{ width: 800, height: 400 }}>
+          <DatavMapBoxWith3DModelDemo />
         </div>
       </Card>
     </div>
