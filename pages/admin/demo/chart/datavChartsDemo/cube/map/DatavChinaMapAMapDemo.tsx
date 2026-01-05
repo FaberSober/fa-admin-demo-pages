@@ -51,7 +51,7 @@ export default function DatavChinaMapAMapDemo() {
     <div
       id="map1"
       style={{
-        height: '500px',
+        height: '400px',
         position: 'relative',
       }}
     />
