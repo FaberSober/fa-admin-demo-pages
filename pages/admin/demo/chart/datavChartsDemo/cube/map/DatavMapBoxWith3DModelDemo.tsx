@@ -3,7 +3,7 @@ import Map, { Layer, Marker, Popup, Source, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { RDBSource } from 'district-data';
 import { useNavigate } from 'react-router-dom';
-import ThreeDModel from './ThreeDModel';
+import MapboxThreeDModel from './components/MapboxThreeDModel';
 
 
 const VITE_APP_MAPBOX_KEY = import.meta.env.VITE_APP_MAPBOX_KEY;
@@ -72,7 +72,7 @@ export default function DatavMapBoxWith3DModelDemo() {
       const modelUrl = fac.type === 'WIND' ? '/file/datavModels/wind_fan.glb' : '/file/datavModels/solar_panel.glb';
       const modelScale = fac.type === 'WIND' ? 8000 : 5000;
       return (
-        <ThreeDModel
+        <MapboxThreeDModel
           key={modelId}
           id={modelId}
           modelUrl={modelUrl}

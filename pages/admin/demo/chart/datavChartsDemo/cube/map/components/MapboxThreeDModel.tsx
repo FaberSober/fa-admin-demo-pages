@@ -1,4 +1,4 @@
-import { useEffect, memo } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { useMap } from 'react-map-gl/mapbox';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -12,7 +12,7 @@ interface ThreeCustomLayer extends mapboxgl.CustomLayerInterface {
   map?: mapboxgl.Map;
 }
 
-interface ThreeDModelProps {
+interface MapboxThreeDModelProps {
   id: string;
   modelUrl: string;
   coordinates: [number, number];
@@ -21,8 +21,9 @@ interface ThreeDModelProps {
   rotation?: [number, number, number];
 }
 
-function ThreeDModelComponent({ id, modelUrl, coordinates, altitude = 0, scale = 1, rotation = [0, 0, 0] }: ThreeDModelProps) {
+function MapboxThreeDModelComponent({ id, modelUrl, coordinates, altitude = 0, scale = 1, rotation = [0, 0, 0] }: MapboxThreeDModelProps) {
   const mapRef = useMap();
+  const layerRef = useRef<ThreeCustomLayer | null>(null);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -131,6 +132,8 @@ function ThreeDModelComponent({ id, modelUrl, coordinates, altitude = 0, scale =
       }
     };
 
+    layerRef.current = customLayer;
+
     const handleLoad = () => {
       if (!map.getLayer(id)) {
         map.addLayer(customLayer as any);
@@ -147,16 +150,67 @@ function ThreeDModelComponent({ id, modelUrl, coordinates, altitude = 0, scale =
     }
 
     return () => {
-      if (map.getLayer(id)) {
-        map.removeLayer(id);
+      const isMapValid = () => {
+        try {
+          return map && map.getStyle && map.getStyle() !== undefined;
+        } catch {
+          return false
+        }
       }
+
+      // 清理Three.js资源
+      const cleanupThreeResources = () => {
+        if (layerRef.current) {
+          const layer = layerRef.current;
+
+          // 清理renderer
+          if (layer.renderer) {
+            layer.renderer.dispose();
+          }
+
+          // 清理场景中的资源
+          if (layer.scene) {
+            layer.scene.traverse((object) => {
+              if (object instanceof THREE.Mesh) {
+                if (object.geometry) {
+                  object.geometry.dispose();
+                }
+                if (object.material) {
+                  if (Array.isArray(object.material)) {
+                    object.material.forEach((material) => material.dispose());
+                  } else {
+                    object.material.dispose();
+                  }
+                }
+              }
+            });
+            layer.scene.clear();
+          }
+
+          // 清理模型
+          if (layer.model) {
+            layer.model = undefined;
+          }
+
+          layerRef.current = null;
+        }
+      };
+
+      if (isMapValid()) {
+        if (map.getLayer(id)) {
+          map.removeLayer(id);
+        }
+        map.off('load', handleLoad);
+      }
+
+      cleanupThreeResources();
     };
   });
 
   return null;
 }
 
-export default memo(ThreeDModelComponent, (prevProps, nextProps) => {
+export default memo(MapboxThreeDModelComponent, (prevProps, nextProps) => {
   return (
     prevProps.id === nextProps.id &&
     prevProps.modelUrl === nextProps.modelUrl &&
@@ -166,6 +220,6 @@ export default memo(ThreeDModelComponent, (prevProps, nextProps) => {
     prevProps.scale === nextProps.scale &&
     (!prevProps.rotation || !nextProps.rotation || prevProps.rotation[0] === nextProps.rotation[0]) &&
     (!prevProps.rotation || !nextProps.rotation || prevProps.rotation[1] === nextProps.rotation[1]) &&
-    (!prevProps.rotation || !nextProps.rotation || prevProps.rotation[2] === nextProps.rotation[2]) 
+    (!prevProps.rotation || !nextProps.rotation || prevProps.rotation[2] === nextProps.rotation[2])
   );
 });
