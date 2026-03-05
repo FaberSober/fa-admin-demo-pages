@@ -34,4 +34,4 @@ CountUser.description = '总用户量';
 CountUser.showTitle = false; // 是否展示Card的Title
 CountUser.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 CountUser.w = 6; // 宽度-网格-max=24
-CountUser.h = 8; // 高度-每个单位20px
+CountUser.h = 5; // 高度-每个单位20px

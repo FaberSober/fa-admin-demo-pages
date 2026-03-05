@@ -34,4 +34,4 @@ CountPv.description = '总访问量';
 CountPv.showTitle = false; // 是否展示Card的Title
 CountPv.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 CountPv.w = 6; // 宽度-网格-max=24
-CountPv.h = 8; // 高度-每个单位20px
+CountPv.h = 5; // 高度-每个单位20px

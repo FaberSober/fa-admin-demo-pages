@@ -43,4 +43,4 @@ ChartViewFrom.description = '访问来源分布玫瑰图';
 ChartViewFrom.showTitle = true; // 是否展示Card的Title
 ChartViewFrom.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 ChartViewFrom.w = 8; // 宽度-网格-max=24
-ChartViewFrom.h = 4; // 高度-每个单位20px
+ChartViewFrom.h = 8; // 高度-每个单位20px

@@ -34,4 +34,4 @@ CountDownload.description = '总下载量';
 CountDownload.showTitle = false; // 是否展示Card的Title
 CountDownload.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 CountDownload.w = 6; // 宽度-网格-max=24
-CountDownload.h = 8; // 高度-每个单位20px
+CountDownload.h = 5; // 高度-每个单位20px

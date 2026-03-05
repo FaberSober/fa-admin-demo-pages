@@ -101,4 +101,4 @@ ChartTrend.description = '最近24小时流量趋势';
 ChartTrend.showTitle = true; // 是否展示Card的Title
 ChartTrend.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 ChartTrend.w = 24; // 宽度-网格-max=24
-ChartTrend.h = 16; // 高度-每个单位20px
+ChartTrend.h = 10; // 高度-每个单位20px

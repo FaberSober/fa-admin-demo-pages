@@ -46,4 +46,4 @@ ChartViewSource.description = '访问终端分布饼图';
 ChartViewSource.showTitle = true; // 是否展示Card的Title
 ChartViewSource.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 ChartViewSource.w = 8; // 宽度-网格-max=24
-ChartViewSource.h = 4; // 高度-每个单位20px
+ChartViewSource.h = 8; // 高度-每个单位20px

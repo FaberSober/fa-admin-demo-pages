@@ -67,4 +67,4 @@ ChartViewCount.description = '访问数量雷达图';
 ChartViewCount.showTitle = true; // 是否展示Card的Title
 ChartViewCount.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 ChartViewCount.w = 8; // 宽度-网格-max=24
-ChartViewCount.h = 4; // 高度-每个单位20px
+ChartViewCount.h = 8; // 高度-每个单位20px
