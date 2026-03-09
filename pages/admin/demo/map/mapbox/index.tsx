@@ -11,7 +11,7 @@ import MapBoxLayerDemo from './cube/MapBoxLayerDemo';
  */
 export default function MapBoxDemoPage() {
   return (
-    <div className="fa-full-content fa-bg-white fa-p12 fa-scroll-auto-y">
+    <div className="fa-full-content fa-p12 fa-scroll-auto-y">
       <Card title="基础地图展示" className="fa-mb12">
         <MapBoxBasicDemo />
       </Card>

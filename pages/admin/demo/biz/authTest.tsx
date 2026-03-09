@@ -23,7 +23,7 @@ export default function AuthTest() {
   const loading1 = useApiLoading([authTestApi.getUrl('test1')]);
   const loading2 = useApiLoading([authTestApi.getUrl('test2')]);
   return (
-    <div className="fa-full-content fa-bg-white fa-p12">
+    <div className="fa-full-content-p12">
       <Card title="按钮权限控制-后台控制" className="fa-mb12">
         <div>在后台接口中进行权限按钮限制</div>
         <Space>

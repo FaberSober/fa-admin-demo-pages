@@ -27,7 +27,7 @@ export default function DatavChartsDemo() {
   }, []);
 
   return (
-    <div className="fa-full-content fa-p12">
+    <div className="fa-full-content-p12">
       <Card title="柱状图" className="fa-mb12">
         <div style={{ width: 800, height: 300 }}>
           <DatavBarChartDemo />

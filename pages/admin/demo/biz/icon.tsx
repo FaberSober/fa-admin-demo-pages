@@ -11,7 +11,7 @@ export default function IconIndex() {
   const [value, setValue] = useState<string>();
 
   return (
-    <div className="fa-full-content fa-bg-white fa-p12" style={{ fontSize: '30px' }}>
+    <div className="fa-full-content-p12" style={{ fontSize: '30px' }}>
       <Card title="使用<FaIcon />" className="fa-mb12">
         <p>可以自定义大小：</p>
         <Space>

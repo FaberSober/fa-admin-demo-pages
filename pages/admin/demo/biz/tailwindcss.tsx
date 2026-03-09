@@ -8,7 +8,7 @@ import { Card } from "antd";
  */
 export default function tailwindcss() {
   return (
-    <div className="fa-full-content fa-bg-white fa-p12">
+    <div className="fa-full-content-p12">
       <Card title="使用tailwindcss构建的button组件" className="fa-mb12">
         <div>
           <FaButton style={{ width: 300 }} />

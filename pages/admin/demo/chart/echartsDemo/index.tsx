@@ -18,7 +18,7 @@ import EchartsRoseChatDemo from './cube/EchartsRoseChatDemo';
 export default function EchartsDemoPage() {
 
   return (
-    <div className="fa-full-content fa-p12">
+    <div className="fa-full-content-p12">
       <Card title="ECharts 天气预报-逐小时" className="fa-mb12">
         <EchartsWeatherHourDemo />
       </Card>

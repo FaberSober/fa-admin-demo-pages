@@ -41,7 +41,7 @@ export default function DemoAdvanceRedis() {
   const loading = useApiLoading([redisTestApi.getUrl('addCache')]);
   const loading2 = useApiLoading([redisTestApi.getUrl('getCache')]);
   return (
-    <div className="fa-full-content fa-flex-row fa-p12">
+    <div className="fa-content fa-flex-row fa-p12">
       <div style={{ width: 300, marginRight: 12 }}>
         <Card title="添加缓存" className="fa-mb12">
           <Form form={form} onFinish={onFinish}>
