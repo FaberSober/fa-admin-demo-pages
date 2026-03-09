@@ -15,7 +15,7 @@ export default function IconIndex() {
       <Card title="使用@iconify/react" className="fa-mb12">
         <p>可以自定义大小：</p>
         <Space>
-          <Icon icon="mdi:rocket-launch" />
+          <Icon icon="mdi:rocket-launch" fontSize="10px" />
           <Icon icon="mdi:rocket-launch" fontSize="20px" />
           <Icon icon="mdi:rocket-launch" fontSize="30px" />
         </Space>
