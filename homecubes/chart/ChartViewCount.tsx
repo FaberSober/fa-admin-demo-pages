@@ -1,14 +1,24 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import EchartsBase from '@features/fa-admin-pages/components/echarts/EchartsBase';
+import { ThemeLayoutContext } from '@fa/ui';
 
 export function ChartViewCount() {
+  const { themeDark } = useContext(ThemeLayoutContext);
+
+  const legendTextColor = themeDark ? '#aaa' : '#666';
+  const axisNameColor   = themeDark ? '#bbb' : '#555';
+  const splitAreaColors = themeDark
+    ? ['rgba(60,70,90,0.3)', 'rgba(60,70,90,0.1)', 'rgba(60,70,90,0.3)', 'rgba(60,70,90,0.1)']
+    : ['rgba(220,225,235,0.3)', 'rgba(220,225,235,0.1)', 'rgba(220,225,235,0.3)', 'rgba(220,225,235,0.1)'];
+  const splitLineColor  = themeDark ? 'rgba(120,140,170,0.4)' : 'rgba(180,190,210,0.5)';
+
   const option = useMemo(() => ({
     legend: {
       data: ['访问', '趋势'],
       bottom: 0,
       itemWidth: 14,
       itemHeight: 14,
-      textStyle: { fontSize: 12, color: '#666' },
+      textStyle: { fontSize: 12, color: legendTextColor },
     },
     radar: {
       indicator: [
@@ -23,15 +33,14 @@ export function ChartViewCount() {
       radius: '65%',
       center: ['50%', '46%'],
       splitNumber: 4,
-      axisName: { color: '#555', fontSize: 12 },
+      axisName: { color: axisNameColor, fontSize: 12 },
       splitArea: {
         areaStyle: {
-          color: ['rgba(220,225,235,0.3)', 'rgba(220,225,235,0.1)',
-                  'rgba(220,225,235,0.3)', 'rgba(220,225,235,0.1)'],
+          color: splitAreaColors,
         },
       },
-      splitLine: { lineStyle: { color: 'rgba(180,190,210,0.5)' } },
-      axisLine:  { lineStyle: { color: 'rgba(180,190,210,0.5)' } },
+      splitLine: { lineStyle: { color: splitLineColor } },
+      axisLine:  { lineStyle: { color: splitLineColor } },
     },
     series: [
       {
@@ -56,7 +65,7 @@ export function ChartViewCount() {
         ],
       },
     ],
-  }), []);
+  }), [themeDark, legendTextColor, axisNameColor, splitAreaColors, splitLineColor]);
 
   return <EchartsBase option={option} />;
 }
@@ -67,4 +76,4 @@ ChartViewCount.description = '访问数量雷达图';
 ChartViewCount.showTitle = true; // 是否展示Card的Title
 ChartViewCount.permission = ''; // 需要的权限-对应RbacMenu.linkUrl
 ChartViewCount.w = 8; // 宽度-网格-max=24
-ChartViewCount.h = 8; // 高度-每个单位20px
+ChartViewCount.h = 8; // 高度-每个单位20px

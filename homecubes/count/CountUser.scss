@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100%;
   padding: 16px 20px;
-  background: #fff;
+  background: var(--fa-bg-color);
   border-radius: 8px;
 
   &__header {
@@ -13,7 +13,7 @@
   &__title {
     font-size: 16px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--fa-text-color);
   }
 
   &__body {
@@ -26,7 +26,7 @@
   &__new-value {
     font-size: 28px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--fa-text-color);
   }
 
   &__icon {
@@ -64,17 +64,17 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 12px;
-    border-top: 1px solid #f5f5f5;
+    border-top: 1px solid var(--fa-border-color);
   }
 
   &__footer-label {
     font-size: 13px;
-    color: #8c8c8c;
+    color: var(--fa-text-color-light100);
   }
 
   &__footer-value {
     font-size: 13px;
-    color: #595959;
+    color: var(--fa-subtitle-color);
     font-weight: 500;
   }
 }
