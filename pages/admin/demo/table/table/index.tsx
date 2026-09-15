@@ -62,7 +62,7 @@ export default function DemoTableSimpleTable() {
   }
 
   return (
-    <div className="fa-content fa-full fa-flex-column">
+    <div className="fa-full-content-p12 fa-flex-column fa-content">
       <div className="fa-flex-row-center fa-p8">
         <div className="fa-h3">{serviceName}</div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
@@ -93,14 +93,16 @@ export default function DemoTableSimpleTable() {
         batchDelete={(ids) => api.removeBatchByIds(ids)}
         onSceneChange={(v) => setSceneId(v)}
         onConditionChange={(cL) => setConditionList(cL)}
-        expandable={{
-          expandedRowRender: (record: Demo.Student) => (
-            <p style={{ margin: 0 }}>
-              info1: {record.info.info1}, info2: {record.info.info2}
-            </p>
-          ),
-          rowExpandable: (record: Demo.Student) => !isNil(record.info),
-        }}
+        // expandable={{
+        //   expandedRowRender: (record: Demo.Student) => (
+        //     <p style={{ margin: 0 }}>
+        //       info1: {record.info.info1}, info2: {record.info.info2}
+        //     </p>
+        //   ),
+        //   rowExpandable: (record: Demo.Student) => !isNil(record.info),
+        // }}
+        // rowClickSelected
+        // rowClickSingleSelected={false}
       />
     </div>
   );
