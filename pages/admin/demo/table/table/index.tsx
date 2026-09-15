@@ -1,7 +1,6 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Space, Tag } from 'antd';
-import { isNil } from 'lodash';
 import { AuthDelBtn, BaseBizTable, BaseTableUtils, clearForm, type FaberTable, useDelete, useExport, useTableQueryParams } from '@fa/ui';
 import { studentApi as api } from '@/services';
 import type { Demo } from '@/types';
@@ -23,7 +22,7 @@ export default function DemoTableSimpleTable() {
   const [exporting, fetchExportExcel] = useExport(api.exportExcel, queryParams);
 
   /** 生成表格字段List */
-  function genColumns() {
+  const columns = useMemo(() => {
     const { sorter } = queryParams;
     return [
       BaseTableUtils.genIdColumn('ID', 'id', 70, sorter),
@@ -59,7 +58,7 @@ export default function DemoTableSimpleTable() {
         tcType: 'menu',
       },
     ] as FaberTable.ColumnsProp<Demo.Student>[];
-  }
+  }, [queryParams.sorter, dicts, fetchPageList, handleDelete]);
 
   return (
     <div className="fa-full-content-p12 fa-flex-column fa-content">
@@ -84,7 +83,7 @@ export default function DemoTableSimpleTable() {
       <BaseBizTable
         rowKey="id"
         biz={biz}
-        columns={genColumns()}
+        columns={columns}
         pagination={paginationProps}
         loading={loading}
         dataSource={list}
