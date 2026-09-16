@@ -1,6 +1,6 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { DragModal, FaFullContentModal } from '@fa/ui';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Modal, message, Select, Space, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Modal, message, Select, Space, Switch, Tag } from 'antd';
 import { useCallback, useState } from 'react';
 
 function FullContentFormModal() {
@@ -128,6 +128,61 @@ function FullContentFormModal() {
   );
 }
 
+/**
+ * 嵌套多个大面积弹框的功能测试：
+ * 多层 FaFullContentModal 均挂载到 .fa-main，通过递增 zIndex 叠加；
+ * 验证逐层打开、层级遮挡、逐层关闭时各层状态独立。
+ */
+function NestedFullContentModals() {
+  const [level1, setLevel1] = useState(false);
+  const [level2, setLevel2] = useState(false);
+  const [level3, setLevel3] = useState(false);
+
+  return (
+    <>
+      <Button type="primary" icon={<PlusOutlined />} onClick={() => setLevel1(true)}>
+        打开第 1 层大面积弹框
+      </Button>
+
+      <FaFullContentModal title="第 1 层大面积弹框" open={level1} onOpenChange={setLevel1} zIndex={999}>
+        <Card title="测试点：叠加下一层" className="fa-mb12">
+          <Space className="fa-mb12">
+            <Tag color="blue">第 1 层</Tag>
+            <Tag>zIndex 999</Tag>
+          </Space>
+          <p className="fa-mb12">本层覆盖 .fa-main 主体区域，点击下方按钮在内部继续叠加第 2 层大面积弹框。</p>
+          <Button type="primary" onClick={() => setLevel2(true)}>
+            打开第 2 层弹框
+          </Button>
+        </Card>
+      </FaFullContentModal>
+
+      <FaFullContentModal title="第 2 层大面积弹框" open={level2} onOpenChange={setLevel2} zIndex={1000}>
+        <Card title="测试点：层级遮挡" className="fa-mb12">
+          <Space className="fa-mb12">
+            <Tag color="blue">第 2 层</Tag>
+            <Tag>zIndex 1000</Tag>
+          </Space>
+          <p className="fa-mb12">本层以更高 zIndex 叠加在第 1 层之上；点击左上角返回或取消关闭本层后，第 1 层保持打开。</p>
+          <Button type="primary" onClick={() => setLevel3(true)}>
+            打开第 3 层弹框
+          </Button>
+        </Card>
+      </FaFullContentModal>
+
+      <FaFullContentModal title="第 3 层大面积弹框" open={level3} onOpenChange={setLevel3} zIndex={1001}>
+        <Card title="测试点：逐层关闭" className="fa-mb12">
+          <Space className="fa-mb12">
+            <Tag color="blue">第 3 层</Tag>
+            <Tag>zIndex 1001</Tag>
+          </Space>
+          <p>最内层弹框。逐层关闭可验证每层弹框状态独立、互不干扰。</p>
+        </Card>
+      </FaFullContentModal>
+    </>
+  );
+}
+
 export default function ModalDemo() {
   const [modalOpen, setModalOpen] = useState(false);
   const [dragModalOpen, setDragModalOpen] = useState(false);
@@ -159,6 +214,11 @@ export default function ModalDemo() {
       <Card title="覆盖 .fa-main 的大面积弹框" className="fa-mb12">
         <p>通过 React Portal 将弹框挂载到 MenuLayout 的 .fa-main 主体区域，适合承载复杂表单。</p>
         <FullContentFormModal />
+      </Card>
+
+      <Card title="嵌套多个大面积弹框（功能测试）" className="fa-mb12">
+        <p>测试多层大面积弹框嵌套：每层覆盖 .fa-main，zIndex 递增；关闭内层后外层保持打开。</p>
+        <NestedFullContentModals />
       </Card>
     </div>
   );

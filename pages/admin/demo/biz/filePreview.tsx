@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Space } from "antd";
 import { FaFlexRestLayout, UploadFileLocal } from "@fa/ui";
-import { FaFileView } from "@features/fa-admin-pages/components";
+import { FilePreview } from "@features/fa-admin-pages/components";
 
 
 /**
@@ -9,7 +9,7 @@ import { FaFileView } from "@features/fa-admin-pages/components";
  * @author xu.pengfei
  * @date 2024/11/24 10:48
  */
-export default function FilePreview() {
+export default function FilePreviewDemo() {
   const [fileId, setFileId] = useState<string>();
 
   return (
@@ -19,7 +19,7 @@ export default function FilePreview() {
       </Space>
 
       <FaFlexRestLayout>
-        <FaFileView fileId={fileId}/>
+        {fileId && <FilePreview fileId={fileId}/>}
       </FaFlexRestLayout>
     </div>
   )
