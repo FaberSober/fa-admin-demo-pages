@@ -27,6 +27,7 @@ namespace PushTest {
     deviceIds: number[];
     title: string;
     content: string;
+    forceNotification?: boolean;
     link?: string;
     extra?: Record<string, unknown>;
   }
@@ -49,6 +50,7 @@ namespace PushTest {
   export interface MessageForm {
     title: string;
     content: string;
+    forceNotification?: boolean;
     link?: string;
     extraJson?: string;
   }

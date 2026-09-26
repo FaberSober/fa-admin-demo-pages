@@ -231,6 +231,7 @@ export default function UniPushTestConsole() {
         deviceIds: selectedDevices.map((device) => device.id),
         title: preview.title.trim(),
         content: preview.content.trim(),
+        forceNotification: preview.forceNotification ?? false,
         link: preview.link,
         extra: preview.extra,
       });
@@ -402,6 +403,7 @@ export default function UniPushTestConsole() {
             <Form<PushTest.MessageForm>
               form={messageForm}
               layout="vertical"
+              initialValues={{ forceNotification: false }}
               onFinish={(values) => void handlePreview(values)}
             >
               <Form.Item
@@ -435,6 +437,14 @@ export default function UniPushTestConsole() {
                 extra="填写 App 内已有页面路由；留空时由客户端按默认行为处理。"
               >
                 <Input maxLength={1024} showCount placeholder="例如 pages/index/index" />
+              </Form.Item>
+              <Form.Item
+                name="forceNotification"
+                label="强制显示通知栏消息"
+                valuePropName="checked"
+                extra="开启后，应用在线时也会自动创建通知栏消息；关闭时沿用 UniPush 默认行为。"
+              >
+                <Switch checkedChildren="开启" unCheckedChildren="关闭" />
               </Form.Item>
               <Form.Item
                 name="extraJson"
@@ -534,6 +544,7 @@ export default function UniPushTestConsole() {
               <Descriptions.Item label="标题">{preview.title}</Descriptions.Item>
               <Descriptions.Item label="内容">{preview.content}</Descriptions.Item>
               <Descriptions.Item label="应用内链接">{preview.link || '—'}</Descriptions.Item>
+              <Descriptions.Item label="强制显示通知栏消息">{preview.forceNotification ? '开启' : '关闭'}</Descriptions.Item>
               {preview.extra && (
                 <Descriptions.Item label="扩展数据">
                   <pre style={{ margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
