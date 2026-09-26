@@ -140,6 +140,31 @@ export default function UniPushTestConsole() {
     void loadRecentRuns();
   }, [loadDevices, loadRecentRuns]);
 
+  useEffect(() => {
+    if (!testRun || testRun.devices.every((device) => ['clicked', 'failed', 'ignored'].includes(device.status))) return;
+    let active = true;
+    let loading = false;
+    const timer = window.setInterval(async () => {
+      if (loading) return;
+      loading = true;
+      try {
+        const run = await pushTestApi.testStatus(testRun.testId);
+        if (active && run && Array.isArray(run.devices)) {
+          setTestRun(run);
+          setRecentRuns((current) => current.filter(Boolean).map((item) => item.testId === run.testId ? run : item));
+        }
+      } catch {
+        // Manual refresh remains available when a background poll fails.
+      } finally {
+        loading = false;
+      }
+    }, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [testRun]);
+
   const selectedIds = useMemo(() => selectedDevices.map((device) => device.id), [selectedDevices]);
 
   const rowSelection: TableProps<PushTest.Device>['rowSelection'] = {
@@ -512,9 +537,9 @@ export default function UniPushTestConsole() {
                     },
                   },
                 ]}
-                extra="填写 App 内已有页面路由；留空时由客户端按默认行为处理。"
+                extra="支持 /features/fa-base-mobile/pages/main/index、/features/fa-base-mobile/pages/messages/index、/features/fa-demo-mobile/pages/diagnostics/push/index；留空时不跳转。"
               >
-                <Input maxLength={1024} showCount placeholder="例如 pages/index/index" />
+                <Input maxLength={1024} showCount placeholder="/features/fa-base-mobile/pages/messages/index" />
               </Form.Item>
               <Form.Item
                 name="forceNotification"
@@ -576,7 +601,7 @@ export default function UniPushTestConsole() {
                 type="warning"
                 showIcon
                 message="Provider 受理不等于设备送达"
-                description="本页面展示服务端逐设备发送状态；客户端接收和点击状态将在移动端回执功能接入后显示。"
+                description="客户端接收和点击后会上报回执；本次结果每 5 秒自动刷新，也可手动刷新。Provider 已受理仍不代表设备已收到。"
               />
               <Table<PushTest.DeviceResult>
                 rowKey="deviceId"
