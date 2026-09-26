@@ -92,6 +92,8 @@ export default function UniPushTestConsole() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [testRun, setTestRun] = useState<PushTest.Run>();
   const [runDevices, setRunDevices] = useState<PushTest.Device[]>([]);
+  const [recentRuns, setRecentRuns] = useState<PushTest.Run[]>([]);
+  const [recentLoading, setRecentLoading] = useState(false);
 
   const loadDevices = useCallback(
     async (current = 1, pageSize = DEFAULT_PAGE_SIZE, query = filterForm.getFieldsValue()) => {
@@ -120,9 +122,23 @@ export default function UniPushTestConsole() {
     [filterForm],
   );
 
+  const loadRecentRuns = useCallback(async () => {
+    setRecentLoading(true);
+    try {
+      const runs = await pushTestApi.recentTests();
+      if (!Array.isArray(runs)) throw new Error('近期测试记录响应格式不正确');
+      setRecentRuns(runs.filter((run) => run && typeof run.testId === 'string' && Array.isArray(run.devices)));
+    } catch (error) {
+      message.error(getErrorMessage(error, '近期测试记录加载失败'));
+    } finally {
+      setRecentLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadDevices(1, DEFAULT_PAGE_SIZE, { enabled: true });
-  }, [loadDevices]);
+    void loadRecentRuns();
+  }, [loadDevices, loadRecentRuns]);
 
   const selectedIds = useMemo(() => selectedDevices.map((device) => device.id), [selectedDevices]);
 
@@ -189,7 +205,7 @@ export default function UniPushTestConsole() {
       key: 'device',
       render: (_value, result) => {
         const device = runDevices.find((item) => item.id === result.deviceId);
-        return device ? `${device.name || device.username || device.userId} · ${device.platform}` : '设备信息不可用';
+        return device ? `${device.name || device.username || device.userId} · ${device.platform}` : `设备 #${result.deviceId}`;
       },
     },
     {
@@ -227,7 +243,7 @@ export default function UniPushTestConsole() {
     if (!preview || selectedDevices.length === 0) return;
     setSending(true);
     try {
-      const res = await pushTestApi.sendTest({
+      const run = await pushTestApi.sendTest({
         deviceIds: selectedDevices.map((device) => device.id),
         title: preview.title.trim(),
         content: preview.content.trim(),
@@ -235,8 +251,12 @@ export default function UniPushTestConsole() {
         link: preview.link,
         extra: preview.extra,
       });
-      setTestRun(res.data);
+      if (!run || typeof run.testId !== 'string' || !Array.isArray(run.devices)) {
+        throw new Error('测试推送响应格式不正确');
+      }
+      setTestRun(run);
       setRunDevices([...selectedDevices]);
+      setRecentRuns((current) => [run, ...current.filter((item) => item && item.testId !== run.testId)].slice(0, 50));
       setPreviewOpen(false);
       message.success('测试推送已提交，发送结果已更新');
     } catch (error) {
@@ -250,8 +270,12 @@ export default function UniPushTestConsole() {
     if (!testRun) return;
     setStatusLoading(true);
     try {
-      const res = await pushTestApi.testStatus(testRun.testId);
-      setTestRun(res.data);
+      const run = await pushTestApi.testStatus(testRun.testId);
+      if (!run || typeof run.testId !== 'string' || !Array.isArray(run.devices)) {
+        throw new Error('测试状态响应格式不正确');
+      }
+      setTestRun(run);
+      setRecentRuns((current) => current.filter(Boolean).map((item) => item.testId === run.testId ? run : item));
       message.success('测试状态已刷新');
     } catch (error) {
       message.error(getErrorMessage(error, '测试状态查询失败'));
@@ -259,6 +283,60 @@ export default function UniPushTestConsole() {
       setStatusLoading(false);
     }
   }
+
+  function handleViewRun(run: PushTest.Run) {
+    setTestRun(run);
+    setRunDevices(devices.filter((device) => run.devices.some((result) => result.deviceId === device.id)));
+  }
+
+  const recentRunColumns: TableColumnsType<PushTest.Run> = [
+    {
+      title: '测试编号',
+      dataIndex: 'testId',
+      ellipsis: true,
+      render: (value: string) => <Typography.Text copyable code>{value}</Typography.Text>,
+    },
+    { title: '发送时间', dataIndex: 'createdAt', width: 170, render: (value: number) => formatDate(value) },
+    { title: '目标数', dataIndex: 'devices', width: 90, render: (value?: PushTest.DeviceResult[]) => `${value?.length ?? 0} 台` },
+    {
+      title: '结果概况',
+      dataIndex: 'devices',
+      render: (value?: PushTest.DeviceResult[]) => {
+        const counts = (value ?? []).reduce<Record<string, number>>((result, device) => {
+          result[device.status] = (result[device.status] ?? 0) + 1;
+          return result;
+        }, {});
+        const summaries = [
+          ['accepted', '已受理', 'blue'],
+          ['ignored', '已忽略', 'default'],
+          ['failed', '失败', 'error'],
+          ['received', '已接收', 'success'],
+          ['clicked', '已点击', 'success'],
+          ['pending', '处理中', 'processing'],
+        ] as const;
+        const tags = summaries
+          .filter(([status]) => counts[status])
+          .map(([status, label, color]) => <Tag key={status} color={color}>{label} {counts[status]}</Tag>);
+        return tags.length ? <Space wrap size={[0, 4]}>{tags}</Space> : '—';
+      },
+    },
+    {
+      title: '操作',
+      dataIndex: 'testId',
+      width: 88,
+      render: (testId: string) => (
+        <Button
+          type="link"
+          onClick={() => {
+            const run = recentRuns.find((item) => item?.testId === testId);
+            if (run) handleViewRun(run);
+          }}
+        >
+          查看结果
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="fa-full-content-p12 fa-flex-column fa-gap12 fa-content">
@@ -498,7 +576,7 @@ export default function UniPushTestConsole() {
                 type="warning"
                 showIcon
                 message="Provider 受理不等于设备送达"
-                description="客户端接收和点击回执需移动端回调功能接入后才能显示；本页面当前展示服务端逐设备发送状态。"
+                description="本页面展示服务端逐设备发送状态；客户端接收和点击状态将在移动端回执功能接入后显示。"
               />
               <Table<PushTest.DeviceResult>
                 rowKey="deviceId"
@@ -511,6 +589,28 @@ export default function UniPushTestConsole() {
             </Card>
           </Col>
         )}
+
+        <Col span={24}>
+          <Card
+            title="近 24 小时测试记录"
+            extra={
+              <Button icon={<ReloadOutlined />} loading={recentLoading} onClick={() => void loadRecentRuns()}>
+                刷新记录
+              </Button>
+            }
+          >
+            <Table<PushTest.Run>
+              rowKey="testId"
+              size="small"
+              columns={recentRunColumns}
+              dataSource={recentRuns.filter(Boolean)}
+              loading={recentLoading}
+              pagination={false}
+              scroll={{ x: 850 }}
+              locale={{ emptyText: '近 24 小时暂无测试记录' }}
+            />
+          </Card>
+        </Col>
       </Row>
 
       <Modal
