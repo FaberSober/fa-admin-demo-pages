@@ -38,12 +38,12 @@ namespace PushTest {
     providerStatus?: string;
     providerTaskId?: string;
     message?: string;
-    updatedAt?: number;
+    updatedAt?: number | string;
   }
 
   export interface Run {
     testId: string;
-    createdAt: number;
+    createdAt: number | string;
     devices: DeviceResult[];
   }
 

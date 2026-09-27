@@ -36,7 +36,12 @@ interface TestPreview extends PushTest.MessageForm {
 }
 
 function formatDate(value?: string | number) {
-  return value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '—';
+  if (value === undefined || value === null || value === '') return '—';
+  const normalizedValue = typeof value === 'string' && /^-?\d+$/.test(value.trim())
+    ? Number(value)
+    : value;
+  const date = dayjs(normalizedValue);
+  return date.isValid() ? date.format('YYYY-MM-DD HH:mm:ss') : '—';
 }
 
 function parseExtraJson(value?: string): Record<string, unknown> | undefined {
