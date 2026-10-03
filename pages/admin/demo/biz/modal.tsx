@@ -1,9 +1,9 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, FullscreenOutlined, PlusOutlined } from '@ant-design/icons';
 import { DragModal, FaFullContentModal } from '@fa/ui';
 import { Button, Card, DatePicker, Form, Input, InputNumber, Modal, message, Select, Space, Switch, Tag } from 'antd';
 import { useCallback, useState } from 'react';
 
-function FullContentFormModal() {
+function FullContentFormModal({ displayMode = 'content' }: { displayMode?: 'content' | 'fullscreen' }) {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -26,10 +26,11 @@ function FullContentFormModal() {
 
   return (
     <FaFullContentModal
-      title="覆盖 .fa-main 的大面积表单"
+      displayMode={displayMode}
+      title={displayMode === 'fullscreen' ? '全屏表单' : '覆盖 .fa-main 的大面积表单'}
       triggerDom={
-        <Button type="primary" icon={<PlusOutlined />}>
-          打开大面积表单
+        <Button type="primary" icon={displayMode === 'fullscreen' ? <FullscreenOutlined /> : <PlusOutlined />}>
+          {displayMode === 'fullscreen' ? '打开全屏弹窗' : '打开大面积表单'}
         </Button>
       }
       open={open}
@@ -214,6 +215,11 @@ export default function ModalDemo() {
       <Card title="覆盖 .fa-main 的大面积弹框" className="fa-mb12">
         <p>通过 React Portal 将弹框挂载到 MenuLayout 的 .fa-main 主体区域，适合承载复杂表单。</p>
         <FullContentFormModal />
+      </Card>
+
+      <Card title="全屏弹窗" className="fa-mb12">
+        <p>覆盖整个浏览器视口，包含菜单和顶栏区域；顶部操作栏固定，表单内容独立滚动。</p>
+        <FullContentFormModal displayMode="fullscreen" />
       </Card>
 
       <Card title="嵌套多个大面积弹框（功能测试）" className="fa-mb12">
