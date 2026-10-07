@@ -18,6 +18,17 @@ export interface BrowserPushVapidPublicKey {
   publicKey: string;
 }
 
+export interface BrowserPushTestSendPayload {
+  title: string;
+  body: string;
+}
+
+export interface BrowserPushTestSendResult {
+  targetCount: number;
+  acceptedCount: number;
+  failedCount: number;
+}
+
 class BrowserPushApi extends BaseZeroApi {
   vapidPublicKey = (): Promise<Fa.Ret<BrowserPushVapidPublicKey>> => this.post('vapidPublicKey', {});
 
@@ -26,6 +37,8 @@ class BrowserPushApi extends BaseZeroApi {
   registerSubscription = (subscription: BrowserPushSubscriptionPayload): Promise<Fa.Ret<void>> => this.post('subscription/register', subscription);
 
   unregisterSubscription = (endpoint: string): Promise<Fa.Ret<void>> => this.post('subscription/unregister', { endpoint });
+
+  sendTestPush = (payload: BrowserPushTestSendPayload): Promise<Fa.Ret<BrowserPushTestSendResult>> => this.post('test/send', payload);
 }
 
 export default new BrowserPushApi(GATE_APP.pushAdmin, 'webPush');

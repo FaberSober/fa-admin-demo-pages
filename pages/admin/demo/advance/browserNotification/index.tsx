@@ -30,6 +30,7 @@ export default function BrowserNotificationDemoPage() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration>();
   const [requestingPermission, setRequestingPermission] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendingTestPush, setSendingTestPush] = useState(false);
   const [browserSubscription, setBrowserSubscription] = useState<PushSubscription | null>(null);
   const [pushSubscriptionState, setPushSubscriptionState] = useState<PushSubscriptionState>('checking');
   const [subscribing, setSubscribing] = useState(false);
@@ -224,6 +225,33 @@ export default function BrowserNotificationDemoPage() {
     }
   }
 
+  async function sendServerTestPush() {
+    const values = await form.validateFields().catch(() => undefined);
+    if (!values) return;
+
+    setSendingTestPush(true);
+    try {
+      const result = await browserPushApi.sendTestPush({
+        title: values.title.trim(),
+        body: values.body.trim(),
+      });
+      const delivery = result.data;
+      if (!delivery) throw new Error('服务端未返回推送结果');
+
+      if (delivery.failedCount === 0) {
+        message.success('服务端已接受 ' + delivery.acceptedCount + ' 个浏览器订阅的推送');
+      } else if (delivery.acceptedCount > 0) {
+        message.warning('服务端接受 ' + delivery.acceptedCount + ' 个，失败 ' + delivery.failedCount + ' 个');
+      } else {
+        message.error('服务端未能接受推送，请检查私钥配置和订阅状态');
+      }
+    } catch (error) {
+      message.error('发送服务端推送失败：' + getErrorMessage(error));
+    } finally {
+      setSendingTestPush(false);
+    }
+  }
+
   const permissionLabel = !notificationSupported
     ? '不支持'
     : permission === 'granted'
@@ -328,7 +356,7 @@ export default function BrowserNotificationDemoPage() {
             showIcon
             type="info"
             title="订阅当前浏览器并绑定到当前登录用户"
-            description="本阶段完成订阅登记与取消；服务端发送推送将在后续阶段接入。新建订阅需要服务端配置 fa.push.webpush.vapid-public-key。"
+            description="订阅后可向当前登录用户的浏览器发送服务端测试推送；即使关闭接收页面，Service Worker 仍可显示通知。新建订阅需要服务端配置 fa.push.webpush.vapid-public-key。"
           />
           <Descriptions
             size="small"
@@ -396,9 +424,14 @@ export default function BrowserNotificationDemoPage() {
             >
               <Input.TextArea rows={3} maxLength={200} showCount placeholder="通知正文" />
             </Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={sending} disabled={!registration || permission !== 'granted'}>
-              发送系统通知
-            </Button>
+            <Space wrap>
+              <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={sending} disabled={!registration || permission !== 'granted'}>
+                发送本地通知
+              </Button>
+              <Button htmlType="button" icon={<SendOutlined />} loading={sendingTestPush} onClick={() => void sendServerTestPush()}>
+                发送服务端推送
+              </Button>
+            </Space>
             {workerState !== 'ready' && (
               <Typography.Text type="secondary" style={{ marginLeft: 12 }}>
                 Service Worker 就绪后即可发送。
