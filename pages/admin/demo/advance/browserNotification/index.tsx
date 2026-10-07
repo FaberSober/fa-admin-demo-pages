@@ -193,9 +193,27 @@ export default function BrowserNotificationDemoPage() {
         return;
       }
 
-      await browserPushApi.unregisterSubscription(subscription.endpoint);
-      const unsubscribed = await subscription.unsubscribe();
-      if (!unsubscribed) throw new Error('浏览器未能取消本地订阅');
+      const subscriptionJson = subscription.toJSON();
+      const p256dh = subscriptionJson.keys?.p256dh;
+      const auth = subscriptionJson.keys?.auth;
+      if (!subscriptionJson.endpoint || !p256dh || !auth) throw new Error('浏览器返回的推送订阅信息不完整');
+
+      const subscriptionPayload = {
+        endpoint: subscriptionJson.endpoint,
+        keys: { p256dh, auth },
+      };
+      await browserPushApi.unregisterSubscription(subscriptionPayload.endpoint);
+      try {
+        const unsubscribed = await subscription.unsubscribe();
+        if (!unsubscribed) throw new Error('浏览器未能取消本地订阅');
+      } catch (error) {
+        try {
+          await browserPushApi.registerSubscription(subscriptionPayload);
+        } catch {
+          throw new Error('本地取消失败，且服务端订阅恢复失败；请重新订阅以同步状态');
+        }
+        throw error;
+      }
 
       setBrowserSubscription(null);
       setPushSubscriptionState('local-missing');
@@ -216,6 +234,7 @@ export default function BrowserNotificationDemoPage() {
       await registration.showNotification(values.title.trim(), {
         body: values.body.trim(),
         tag: 'browser-notification-' + Date.now(),
+        data: { url: '/admin/demo/advance/browserNotification' },
       });
       message.success('通知已提交给浏览器显示');
     } catch (error) {
