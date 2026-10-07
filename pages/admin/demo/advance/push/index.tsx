@@ -377,7 +377,7 @@ export default function UniPushTestConsole() {
       <Alert
         type="info"
         showIcon
-        message="仅向已登记的 UniPush 设备发送测试通知"
+        title="仅向已登记的 UniPush 设备发送测试通知"
         description="Provider 已受理只表示推送服务接受了请求，不代表设备已经收到通知。单次最多选择 5 台设备。"
       />
 
@@ -605,7 +605,7 @@ export default function UniPushTestConsole() {
                 className="fa-mb12"
                 type="warning"
                 showIcon
-                message="Provider 受理不等于设备送达"
+                title="Provider 受理不等于设备送达"
                 description="客户端接收和点击后会上报回执；本次结果每 5 秒自动刷新，也可手动刷新。Provider 已受理仍不代表设备已收到。"
               />
               <Table<PushTest.DeviceResult>
@@ -658,7 +658,7 @@ export default function UniPushTestConsole() {
             <Alert
               type="warning"
               showIcon
-              message={`即将向 ${selectedDevices.length} 台设备发送即时测试通知`}
+              title={`即将向 ${selectedDevices.length} 台设备发送即时测试通知`}
               description="请确认目标设备和消息内容。发送后通知可能立即出现在用户设备上。"
             />
             <Descriptions bordered size="small" column={1}>
