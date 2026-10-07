@@ -1,6 +1,7 @@
 import { BellOutlined, ReloadOutlined, SendOutlined } from '@ant-design/icons';
+import { browserPushApi } from '@features/fa-admin-demo-pages/services';
 import { Alert, Button, Card, Descriptions, Form, Input, message, Space, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface NotificationFormValues {
   title: string;
@@ -9,9 +10,17 @@ interface NotificationFormValues {
 
 type NotificationPermissionState = NotificationPermission | 'unsupported' | undefined;
 type WorkerState = 'checking' | 'registering' | 'ready' | 'unsupported' | 'insecure' | 'error';
+type PushSubscriptionState = 'checking' | 'unsupported' | 'local-missing' | 'synced' | 'sync-required' | 'error';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error && error.message ? error.message : '未知错误';
+}
+
+function decodeVapidPublicKey(value: string): ArrayBuffer {
+  const padding = '='.repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = Uint8Array.from(window.atob(base64), (character) => character.charCodeAt(0));
+  return bytes.buffer;
 }
 
 export default function BrowserNotificationDemoPage() {
@@ -21,10 +30,40 @@ export default function BrowserNotificationDemoPage() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration>();
   const [requestingPermission, setRequestingPermission] = useState(false);
   const [sending, setSending] = useState(false);
+  const [browserSubscription, setBrowserSubscription] = useState<PushSubscription | null>(null);
+  const [pushSubscriptionState, setPushSubscriptionState] = useState<PushSubscriptionState>('checking');
+  const [subscribing, setSubscribing] = useState(false);
+  const [unsubscribing, setUnsubscribing] = useState(false);
 
   const notificationSupported = typeof window !== 'undefined' && 'Notification' in window;
   const serviceWorkerSupported = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+  const pushSupported = typeof window !== 'undefined' && 'PushManager' in window;
   const secureContext = typeof window !== 'undefined' && window.isSecureContext;
+
+  const refreshPushSubscription = useCallback(
+    async (workerRegistration: ServiceWorkerRegistration) => {
+      if (!pushSupported) {
+        setPushSubscriptionState('unsupported');
+        return;
+      }
+
+      try {
+        const subscription = await workerRegistration.pushManager.getSubscription();
+        setBrowserSubscription(subscription);
+        if (!subscription) {
+          setPushSubscriptionState('local-missing');
+          return;
+        }
+
+        setPushSubscriptionState('checking');
+        const result = await browserPushApi.subscriptionStatus(subscription.endpoint);
+        setPushSubscriptionState(result.data?.subscribed ? 'synced' : 'sync-required');
+      } catch {
+        setPushSubscriptionState('error');
+      }
+    },
+    [pushSupported],
+  );
 
   useEffect(() => {
     let active = true;
@@ -68,6 +107,10 @@ export default function BrowserNotificationDemoPage() {
     };
   }, [notificationSupported, secureContext, serviceWorkerSupported]);
 
+  useEffect(() => {
+    if (registration) void refreshPushSubscription(registration);
+  }, [registration, refreshPushSubscription]);
+
   async function requestPermission() {
     if (!notificationSupported || !secureContext) return;
 
@@ -91,6 +134,77 @@ export default function BrowserNotificationDemoPage() {
 
   function refreshPermission() {
     if (notificationSupported) setPermission(Notification.permission);
+  }
+
+  async function subscribeBrowserPush() {
+    if (!registration || !notificationSupported || !pushSupported || !secureContext) return;
+
+    setSubscribing(true);
+    try {
+      let currentPermission = Notification.permission;
+      if (currentPermission === 'default') {
+        currentPermission = await Notification.requestPermission();
+        setPermission(currentPermission);
+      }
+      if (currentPermission !== 'granted') {
+        throw new Error(currentPermission === 'denied' ? '通知权限已拒绝，请先在 Chrome 站点设置中允许通知' : '未获得通知权限');
+      }
+
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        const keyResult = await browserPushApi.vapidPublicKey();
+        const publicKey = keyResult.data?.publicKey?.trim();
+        if (!publicKey) throw new Error('服务端未配置 Web Push VAPID 公钥');
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: decodeVapidPublicKey(publicKey),
+        });
+      }
+
+      const subscriptionJson = subscription.toJSON();
+      const p256dh = subscriptionJson.keys?.p256dh;
+      const auth = subscriptionJson.keys?.auth;
+      if (!subscriptionJson.endpoint || !p256dh || !auth) throw new Error('浏览器返回的推送订阅信息不完整');
+
+      await browserPushApi.registerSubscription({
+        endpoint: subscriptionJson.endpoint,
+        keys: { p256dh, auth },
+      });
+      message.success('当前浏览器已订阅并同步到服务端');
+      await refreshPushSubscription(registration);
+    } catch (error) {
+      message.error('订阅浏览器推送失败：' + getErrorMessage(error));
+      await refreshPushSubscription(registration);
+    } finally {
+      setSubscribing(false);
+    }
+  }
+
+  async function unsubscribeBrowserPush() {
+    if (!registration) return;
+
+    setUnsubscribing(true);
+    try {
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        await refreshPushSubscription(registration);
+        message.info('当前浏览器尚未订阅');
+        return;
+      }
+
+      await browserPushApi.unregisterSubscription(subscription.endpoint);
+      const unsubscribed = await subscription.unsubscribe();
+      if (!unsubscribed) throw new Error('浏览器未能取消本地订阅');
+
+      setBrowserSubscription(null);
+      setPushSubscriptionState('local-missing');
+      message.success('当前浏览器已取消订阅');
+    } catch (error) {
+      message.error('取消浏览器推送订阅失败：' + getErrorMessage(error));
+      await refreshPushSubscription(registration);
+    } finally {
+      setUnsubscribing(false);
+    }
   }
 
   async function sendNotification(values: NotificationFormValues) {
@@ -129,6 +243,15 @@ export default function BrowserNotificationDemoPage() {
     error: '注册失败',
   }[workerState];
   const workerColor = workerState === 'ready' ? 'success' : workerState === 'error' || workerState === 'insecure' ? 'error' : 'default';
+  const pushSubscriptionLabel = {
+    checking: '检查中',
+    unsupported: '不支持',
+    'local-missing': '未订阅',
+    synced: '已同步到服务端',
+    'sync-required': '本地已订阅，待同步',
+    error: '服务端状态读取失败',
+  }[pushSubscriptionState];
+  const pushSubscriptionColor = pushSubscriptionState === 'synced' ? 'success' : pushSubscriptionState === 'error' ? 'error' : 'default';
 
   return (
     <div className="fa-full-content-p12" style={{ overflow: 'auto' }}>
@@ -199,6 +322,49 @@ export default function BrowserNotificationDemoPage() {
         {workerState === 'error' && (
           <Alert showIcon type="error" title="Service Worker 注册失败" description="请确认 /admin/browser-notification-sw.js 可访问后刷新页面重试。" />
         )}
+
+        <Card title="浏览器推送订阅">
+          <Alert
+            showIcon
+            type="info"
+            title="订阅当前浏览器并绑定到当前登录用户"
+            description="本阶段完成订阅登记与取消；服务端发送推送将在后续阶段接入。新建订阅需要服务端配置 fa.push.webpush.vapid-public-key。"
+          />
+          <Descriptions
+            size="small"
+            column={{ xs: 1, sm: 2 }}
+            style={{ marginTop: 16 }}
+            items={[
+              { key: 'push', label: 'Push API', children: pushSupported ? '支持' : '不支持' },
+              {
+                key: 'subscription',
+                label: '当前浏览器订阅',
+                children: <Tag color={pushSubscriptionColor}>{pushSubscriptionLabel}</Tag>,
+              },
+            ]}
+          />
+          <Space wrap>
+            <Button
+              type="primary"
+              icon={<BellOutlined />}
+              loading={subscribing}
+              disabled={!registration || !notificationSupported || !pushSupported || !secureContext || permission === 'denied'}
+              onClick={subscribeBrowserPush}
+            >
+              {browserSubscription ? '同步此浏览器订阅' : '订阅此浏览器'}
+            </Button>
+            <Button danger loading={unsubscribing} disabled={!registration || !pushSupported || !browserSubscription} onClick={unsubscribeBrowserPush}>
+              取消订阅
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              disabled={!registration || !pushSupported}
+              onClick={() => registration && void refreshPushSubscription(registration)}
+            >
+              刷新订阅状态
+            </Button>
+          </Space>
+        </Card>
 
         <Card title="发送本地测试通知">
           <Form<NotificationFormValues>
