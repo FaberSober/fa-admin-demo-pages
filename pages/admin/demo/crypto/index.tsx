@@ -1,22 +1,22 @@
 import { useRef, useState } from 'react';
-import { encryptRequest, type CryptoEnvelope, type CryptoPreparation } from '@fa/core/crypto';
+import type { PreparedCryptoRequest, FieldCryptoPreparation } from '@fa/core/crypto';
 import { FaJsonView, useApiLoading } from '@fa/ui';
 import { Alert, Button, Card, Descriptions, Input, Space, Tag, Typography } from 'antd';
 import { isAxiosError } from 'axios';
-import { cryptoDemoApi, cryptoSecurityApi } from '@features/fa-admin-demo-pages/services';
+import { cryptoDemoApi } from '@features/fa-admin-demo-pages/services';
 
 export default function CryptoDemoPage() {
   const [text, setText] = useState('你好，FA Admin 🔐\n跨端加密测试');
-  const [preparation, setPreparation] = useState<CryptoPreparation>();
-  const [envelope, setEnvelope] = useState<CryptoEnvelope>();
+  const [preparation, setPreparation] = useState<FieldCryptoPreparation>();
+  const [envelope, setEnvelope] = useState<PreparedCryptoRequest>();
   const [result, setResult] = useState<{ ok: boolean; title: string; detail: string }>();
   const [encrypting, setEncrypting] = useState(false);
   const running = useRef(false);
   const requesting = useApiLoading([
-    cryptoSecurityApi.getUrl('public-key'), cryptoSecurityApi.getUrl('prepare'), cryptoDemoApi.getUrl('roundtrip'),
+    '/api/base/security/crypto/public-key', '/api/base/security/crypto/prepare', cryptoDemoApi.getUrl('roundtrip'),
   ]);
   const busy = requesting || encrypting;
-  const bytes = new TextEncoder().encode(JSON.stringify({ text })).length;
+  const bytes = new TextEncoder().encode(text).length;
 
   async function run(title: string, action: () => Promise<void>) {
     if (running.current) return;
@@ -37,13 +37,10 @@ export default function CryptoDemoPage() {
     void run('生成密文', async () => {
       setEnvelope(undefined);
       setPreparation(undefined);
-      const [key, ready] = await Promise.all([cryptoSecurityApi.publicKey(), cryptoSecurityApi.prepare()]);
-      setPreparation(ready.data);
       setEncrypting(true);
       try {
-        const encrypted = await encryptRequest({ text }, key.data, ready.data, {
-          purpose: 'CRYPTO_DEMO', method: 'POST', path: cryptoDemoApi.getUrl('roundtrip'),
-        });
+        const encrypted = await cryptoDemoApi.prepare(text);
+        setPreparation(encrypted.preparation);
         setEnvelope(encrypted);
         setResult({ ok: true, title: '密文已生成', detail: '点击“提交后台解密”验证。重复生成会使用新的随机密钥和 IV。' });
       } finally {
@@ -58,12 +55,12 @@ export default function CryptoDemoPage() {
     void run(title, async () => {
       let payload = envelope;
       if (tamper) {
-        const bytes = Uint8Array.from(atob(envelope.ciphertext), c => c.charCodeAt(0));
-        bytes[0] ^= 1;
-        payload = { ...envelope, ciphertext: btoa(String.fromCharCode(...bytes)) };
+        const parts = String(envelope.body.text).split('.');
+        parts[2] = (parts[2].startsWith('A') ? 'B' : 'A') + parts[2].slice(1);
+        payload = { ...envelope, body: { ...envelope.body, text: parts.join('.') } };
       }
       const response = await cryptoDemoApi.roundtrip(payload);
-      setResult({ ok: true, title: `${title}成功`, detail: response.data.text });
+      setResult({ ok: true, title: `${title}成功`, detail: response.data.text + `\nage=${response.data.age}（明文原样返回）` });
     });
   }
 
@@ -73,7 +70,7 @@ export default function CryptoDemoPage() {
         <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Alert type="info" showIcon title="仅输入普通测试文本，请勿输入真实密码或其他敏感信息"
             description="先生成密文，再交给后台解密。防重放状态由后台配置决定，页面无法关闭保护。" />
-          <label htmlFor="crypto-demo-text">测试文本（业务 JSON 的 UTF-8 编码最多 4096 字节）</label>
+          <label htmlFor="crypto-demo-text">测试文本（仅此字段加密，UTF-8 最多 4096 字节）</label>
           <Input.TextArea id="crypto-demo-text" value={text} rows={4} disabled={busy}
             onChange={event => { setText(event.target.value); setEnvelope(undefined); setPreparation(undefined); setResult(undefined); }} />
           <Typography.Text type={bytes > 4096 ? 'danger' : 'secondary'}>{bytes} / 4096 字节</Typography.Text>
@@ -99,7 +96,8 @@ export default function CryptoDemoPage() {
             title={result.title} description={<span style={{ whiteSpace: 'pre-wrap' }}>{result.detail || '（空文本）'}</span>} /></div>}
         </Space>
       </Card>
-      <Card title="请求信封"><FaJsonView data={envelope ?? null} defaultExpandDepth={1} /></Card>
+      <Card title="业务 JSON（age 保持明文）"><FaJsonView data={envelope?.body ?? null} defaultExpandDepth={1} /></Card>
+      <Card title="请求 Header"><FaJsonView data={envelope?.headers ?? null} defaultExpandDepth={1} /></Card>
     </Space>
   </div>;
 }

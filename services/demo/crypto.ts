@@ -1,15 +1,13 @@
-import type { CryptoEnvelope, CryptoPreparation, CryptoPublicKey } from '@fa/core/crypto';
-import { BaseZeroApi, type Fa } from '@fa/ui';
+import type { PreparedCryptoRequest } from '@fa/core/crypto';
+import { BaseZeroApi, prepareCryptoRequest, type Fa } from '@fa/ui';
 import { GATE_APP } from '@/configs';
 
-class CryptoSecurityApi extends BaseZeroApi {
-  publicKey = (): Promise<Fa.Ret<CryptoPublicKey>> => this.get('public-key');
-  prepare = (): Promise<Fa.Ret<CryptoPreparation>> => this.post('prepare', { purpose: 'CRYPTO_DEMO' });
-}
-
 class CryptoDemoApi extends BaseZeroApi {
-  roundtrip = (envelope: CryptoEnvelope): Promise<Fa.Ret<{ text: string }>> => this.post('roundtrip', envelope);
+  prepare = (text: string): Promise<PreparedCryptoRequest> =>
+    prepareCryptoRequest(this.getUrl('roundtrip'), { text, age: 18 }, ['text']);
+
+  roundtrip = (prepared: PreparedCryptoRequest): Promise<Fa.Ret<{ text: string; age: number }>> =>
+    this.post('roundtrip', prepared.body, { headers: prepared.headers });
 }
 
-export const cryptoSecurityApi = new CryptoSecurityApi(GATE_APP.cryptoSecurity, 'crypto');
 export const cryptoDemoApi = new CryptoDemoApi(GATE_APP.demo, 'crypto');
